@@ -2,15 +2,14 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getOutfits } from "@/lib/data/outfits";
 import { getItems } from "@/lib/data/items";
-import { OutfitCard } from "@/components/outfits/OutfitCard";
+import { OutfitsList } from "@/components/outfits/OutfitsList";
 import { PageContainer } from "@/components/layout/PageContainer";
-import type { Item } from "@/types";
+import { indexById } from "@/lib/utils/item";
 import { css } from "@/styled-system/css";
 
 export default async function OutfitsPage() {
   const [outfits, items] = await Promise.all([getOutfits(), getItems()]);
-  const itemsById: Record<string, Item> = {};
-  for (const it of items) itemsById[it.id] = it;
+  const itemsById = indexById(items);
 
   return (
     <PageContainer>
@@ -58,17 +57,7 @@ export default async function OutfitsPage() {
           아직 만든 코디가 없어요. ‘만들기’로 옷을 조합해보세요.
         </div>
       ) : (
-        <div
-          className={css({
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "4",
-          })}
-        >
-          {outfits.map((o) => (
-            <OutfitCard key={o.id} outfit={o} itemsById={itemsById} />
-          ))}
-        </div>
+        <OutfitsList outfits={outfits} itemsById={itemsById} />
       )}
     </PageContainer>
   );

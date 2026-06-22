@@ -13,8 +13,11 @@ import {
   type Item,
 } from "@/types";
 import type { CategoryMap } from "@/lib/recommend";
+import { sortItems, ITEM_SORT_LABELS, type ItemSort } from "@/lib/utils/item";
 import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
+
+const SORTS = Object.keys(ITEM_SORT_LABELS) as ItemSort[];
 
 const MATERIALS = ["면", "폴리에스터", "울", "아크릴", "나일론", "린넨", "데님", "가죽", "캐시미어"];
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
@@ -48,6 +51,7 @@ export function ClosetView({
   const [materials, setMaterials] = useState<string[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [statuses, setStatuses] = useState<ItemStatus[]>([]);
+  const [sort, setSort] = useState<ItemSort>("recent");
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const presentColors = useMemo(() => {
@@ -77,6 +81,8 @@ export function ClosetView({
       }),
     [items, cat, fav, search, colors, materials, seasons, statuses, categoryMap],
   );
+
+  const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort]);
 
   const activeCount = colors.length + materials.length + seasons.length + statuses.length;
 
@@ -195,13 +201,48 @@ export function ClosetView({
         ))}
       </div>
 
+      {/* 개수 + 정렬 */}
+      <div
+        className={css({
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginTop: "4",
+          marginBottom: "1",
+        })}
+      >
+        <span className={css({ fontSize: "sm", color: "text.tertiary" })}>
+          {sorted.length}개
+        </span>
+        <select
+          aria-label="정렬"
+          value={sort}
+          onChange={(e) => setSort(e.target.value as ItemSort)}
+          className={css({
+            height: "32px",
+            paddingX: "2",
+            bg: "transparent",
+            fontSize: "sm",
+            color: "text.secondary",
+            cursor: "pointer",
+            _focusVisible: { outline: "none" },
+          })}
+        >
+          {SORTS.map((s) => (
+            <option key={s} value={s}>
+              {ITEM_SORT_LABELS[s]}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* 결과 */}
-      {filtered.length === 0 ? (
-        <p className={css({ marginTop: "12", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
+      {sorted.length === 0 ? (
+        <p className={css({ marginTop: "10", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
           조건에 맞는 아이템이 없어요.
         </p>
       ) : (
-        <ClosetGrid items={filtered} categoryMap={categoryMap} profileNote={profileNote} />
+        <ClosetGrid items={sorted} categoryMap={categoryMap} profileNote={profileNote} />
       )}
 
       {/* 필터 바텀시트 */}
