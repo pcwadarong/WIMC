@@ -68,17 +68,15 @@ export default defineConfig({
           "3xl": { value: "30px" },
         },
         radii: {
-          sm: { value: "8px" }, // 인풋, 필터칩
-          md: { value: "12px" }, // 카드, 이미지
-          lg: { value: "16px" }, // 바텀시트, 모달
-          full: { value: "9999px" }, // 버튼, 배지
+          sm: { value: "5px" }, // 인풋, 작은 요소 (각진 톤)
+          md: { value: "7px" }, // 카드, 이미지
+          lg: { value: "12px" }, // 바텀시트
+          full: { value: "9999px" }, // 버튼, 칩, 배지(필)
         },
         shadows: {
-          card: {
-            value:
-              "0 1px 3px rgba(44, 26, 14, 0.06), 0 1px 2px rgba(44, 26, 14, 0.04)",
-          },
-          modal: { value: "0 20px 60px rgba(44, 26, 14, 0.15)" },
+          // 미니멀 모노: 떠 있는 그림자 대신 1px 아웃라인으로 깊이 표현
+          card: { value: "0 0 0 1px #E8E4DE" },
+          modal: { value: "0 12px 40px rgba(44, 26, 14, 0.18)" },
         },
         sizes: {
           app: { value: "430px" }, // 모바일 퍼스트 최대 너비
