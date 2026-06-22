@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Loader2,
   Sparkles,
@@ -396,24 +397,16 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
           overflow: "hidden",
         })}
       >
-        <button
-          type="button"
-          className={menuRow()}
-          onClick={() => show("문의 기능은 준비 중이에요.", "info")}
-        >
+        <Link href="/contact" className={menuRow()}>
           <Mail size={18} className={css({ color: "text.secondary" })} />
           <span className={css({ flex: 1 })}>문의</span>
           <ChevronRight size={18} className={css({ color: "text.tertiary" })} />
-        </button>
-        <button
-          type="button"
-          className={menuRow()}
-          onClick={() => show("설정은 준비 중이에요.", "info")}
-        >
+        </Link>
+        <Link href="/settings" className={menuRow()}>
           <Settings size={18} className={css({ color: "text.secondary" })} />
           <span className={css({ flex: 1 })}>설정</span>
           <ChevronRight size={18} className={css({ color: "text.tertiary" })} />
-        </button>
+        </Link>
         <form action={signOut}>
           <button type="submit" className={menuRow(true)}>
             <LogOut size={18} />
