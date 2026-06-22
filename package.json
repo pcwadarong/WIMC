@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "panda codegen",
     "dev": "next dev",
     "build": "panda codegen && next build",
     "start": "next start",
-    "lint": "eslint",
-    "prepare": "panda codegen"
+    "lint": "eslint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
