@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pencil } from "lucide-react";
 import { getOutfit } from "@/lib/data/outfits";
 import { getItems } from "@/lib/data/items";
 import { ItemCard } from "@/components/items/ItemCard";
@@ -56,7 +58,33 @@ export default async function OutfitPage({
           ))}
         </div>
 
-        <div className={css({ marginTop: "8" })}>
+        <div
+          className={css({
+            marginTop: "8",
+            display: "flex",
+            flexDirection: "column",
+            gap: "3",
+          })}
+        >
+          <Link
+            href={`/outfits/${outfit.id}/edit`}
+            className={css({
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "2",
+              height: "52px",
+              borderRadius: "full",
+              bg: "surface.muted",
+              color: "text.primary",
+              fontSize: "base",
+              fontWeight: 600,
+              _hover: { bg: "border" },
+            })}
+          >
+            <Pencil size={18} />
+            수정
+          </Link>
           <DeleteOutfitButton id={outfit.id} />
         </div>
       </div>

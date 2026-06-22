@@ -4,19 +4,21 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { X, Star, ImagePlus, Loader2 } from "lucide-react";
 import { compressImage } from "@/lib/utils/image";
-import { css, cx } from "@/styled-system/css";
+import { css } from "@/styled-system/css";
 
-export interface LocalImage {
-  id: string;
-  file: File;
-  previewUrl: string;
-}
+/** 기존(업로드됨) 이미지와 새로 고른 파일을 한 목록으로 관리 */
+export type EditableImage =
+  | { id: string; kind: "existing"; url: string; bg_removed: boolean }
+  | { id: string; kind: "new"; file: File; previewUrl: string };
 
 interface ImageUploadProps {
-  value: LocalImage[];
-  onChange: (images: LocalImage[]) => void;
+  value: EditableImage[];
+  onChange: (images: EditableImage[]) => void;
   max?: number;
 }
+
+const srcOf = (img: EditableImage) =>
+  img.kind === "existing" ? img.url : img.previewUrl;
 
 export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,11 +30,12 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
     const remaining = max - value.length;
     const picked = Array.from(files).slice(0, remaining);
 
-    const added: LocalImage[] = [];
+    const added: EditableImage[] = [];
     for (const file of picked) {
       const compressed = await compressImage(file);
       added.push({
         id: crypto.randomUUID(),
+        kind: "new",
         file: compressed,
         previewUrl: URL.createObjectURL(compressed),
       });
@@ -44,7 +47,7 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
 
   const remove = (id: string) => {
     const target = value.find((v) => v.id === id);
-    if (target) URL.revokeObjectURL(target.previewUrl);
+    if (target?.kind === "new") URL.revokeObjectURL(target.previewUrl);
     onChange(value.filter((v) => v.id !== id));
   };
 
@@ -75,7 +78,7 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
             })}
           >
             <Image
-              src={img.previewUrl}
+              src={srcOf(img)}
               alt=""
               fill
               sizes="33vw"
@@ -92,7 +95,7 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
                   paddingY: "0.5",
                   borderRadius: "full",
                   bg: "brown.dark",
-                  color: "surface",
+                  color: "white",
                   fontSize: "xs",
                   fontWeight: 600,
                 })}
@@ -103,7 +106,7 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
             <button
               type="button"
               onClick={() => remove(img.id)}
-              aria-label="삭제"
+              aria-label="사진 삭제"
               className={css({
                 position: "absolute",
                 top: "1",
@@ -125,6 +128,7 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
               <button
                 type="button"
                 onClick={() => makePrimary(img.id)}
+                aria-label="대표 사진으로"
                 className={css({
                   position: "absolute",
                   bottom: "1",
@@ -153,24 +157,23 @@ export function ImageUpload({ value, onChange, max = 5 }: ImageUploadProps) {
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className={cx(
-              css({
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "1",
-                aspectRatio: "1",
-                borderRadius: "md",
-                borderWidth: "1.5px",
-                borderStyle: "dashed",
-                borderColor: "border",
-                bg: "surface.muted",
-                color: "text.tertiary",
-                cursor: "pointer",
-                _hover: { borderColor: "brown.light", color: "text.secondary" },
-              }),
-            )}
+            aria-label="사진 추가"
+            className={css({
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1",
+              aspectRatio: "1",
+              borderRadius: "md",
+              borderWidth: "1.5px",
+              borderStyle: "dashed",
+              borderColor: "border",
+              bg: "surface.muted",
+              color: "text.tertiary",
+              cursor: "pointer",
+              _hover: { borderColor: "brown.light", color: "text.secondary" },
+            })}
           >
             {busy ? (
               <Loader2

@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pencil } from "lucide-react";
 import { getItem } from "@/lib/data/items";
 import { getCategoryTree } from "@/lib/data/categories";
 import { ItemDetail } from "@/components/items/ItemDetail";
@@ -39,7 +41,34 @@ export default async function ItemPage({
         action={<FavoriteToggle id={item.id} initial={item.is_favorite} />}
       />
       <ItemDetail item={item} categoryLabel={categoryLabel} />
-      <div className={css({ paddingX: "5", paddingBottom: "10" })}>
+      <div
+        className={css({
+          paddingX: "5",
+          paddingBottom: "10",
+          display: "flex",
+          flexDirection: "column",
+          gap: "3",
+        })}
+      >
+        <Link
+          href={`/closet/${item.id}/edit`}
+          className={css({
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "2",
+            height: "52px",
+            borderRadius: "full",
+            bg: "surface.muted",
+            color: "text.primary",
+            fontSize: "base",
+            fontWeight: 600,
+            _hover: { bg: "border" },
+          })}
+        >
+          <Pencil size={18} />
+          수정
+        </Link>
         <DeleteItemButton id={item.id} />
       </div>
     </>

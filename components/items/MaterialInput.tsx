@@ -25,17 +25,31 @@ const PRESETS = [
   "가죽",
 ];
 
+/** "면 60% · 폴리에스터 40%" 문자열을 행으로 파싱 */
+function parseInitial(initial?: string): Row[] {
+  const trimmed = (initial ?? "").trim();
+  if (!trimmed) return [{ id: "m0", name: "", percent: "" }];
+  return trimmed.split("·").map((tok, i) => {
+    const t = tok.trim();
+    const m = t.match(/^(.*?)\s+(\d+(?:\.\d+)?)%$/);
+    return m
+      ? { id: `m${i}`, name: m[1].trim(), percent: m[2] }
+      : { id: `m${i}`, name: t, percent: "" };
+  });
+}
+
 /** 소재 + 혼용률 입력. 부모에는 "면 60% · 폴리에스터 40%" 형태의 문자열로 전달 */
 export function MaterialInput({
+  initial,
   onChange,
 }: {
+  initial?: string;
   onChange: (value: string) => void;
 }) {
+  const initialRows = parseInitial(initial);
   // 결정적 초기 id (SSR/CSR 일치) + 이후 증가 카운터
-  const counter = useRef(1);
-  const [rows, setRows] = useState<Row[]>([
-    { id: "m0", name: "", percent: "" },
-  ]);
+  const counter = useRef(initialRows.length);
+  const [rows, setRows] = useState<Row[]>(initialRows);
 
   const emit = (next: Row[]) => {
     const str = next

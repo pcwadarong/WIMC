@@ -61,6 +61,45 @@ export async function createItem(input: ItemInput): Promise<ActionResult> {
   return { ok: true, id: data?.id as string };
 }
 
+export async function updateItem(
+  id: string,
+  input: ItemInput,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+  if (!input.name.trim()) return { error: "이름을 입력해주세요." };
+
+  const { error } = await supabase
+    .from("items")
+    .update({
+      name: input.name.trim(),
+      category_id: input.category_id,
+      brand: input.brand,
+      purchase_from: input.purchase_from,
+      purchase_price: input.purchase_price,
+      purchase_date: input.purchase_date,
+      memo: input.memo,
+      material: input.material,
+      season: input.season,
+      colors: input.colors,
+      size_info: input.size_info,
+      images: input.images,
+      status: input.status,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/closet");
+  revalidatePath(`/closet/${id}`);
+  revalidatePath("/");
+  return { ok: true, id };
+}
+
 export async function toggleFavorite(
   id: string,
   next: boolean,

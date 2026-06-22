@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { primaryImageUrl } from "@/components/items/ItemCard";
-import { createOutfit } from "@/app/(app)/outfits/actions";
+import { createOutfit, updateOutfit } from "@/app/(app)/outfits/actions";
 import type { CategoryMap } from "@/lib/recommend";
 import type { Item } from "@/types";
 import { chipClass } from "@/components/ui/styles";
@@ -18,16 +18,23 @@ export function OutfitBuilder({
   items,
   categoryMap,
   parents,
+  outfitId,
+  initialName = "",
+  initialSelected = [],
 }: {
   items: Item[];
   categoryMap: CategoryMap;
   parents: string[];
+  outfitId?: string;
+  initialName?: string;
+  initialSelected?: string[];
 }) {
   const router = useRouter();
   const { show } = useToast();
+  const isEdit = Boolean(outfitId);
 
-  const [selected, setSelected] = useState<string[]>([]);
-  const [name, setName] = useState("");
+  const [selected, setSelected] = useState<string[]>(initialSelected);
+  const [name, setName] = useState(initialName);
   const [cat, setCat] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
@@ -49,19 +56,22 @@ export function OutfitBuilder({
       return;
     }
     setSaving(true);
-    const result = await createOutfit({
+    const payload = {
       name: name.trim() || null,
       item_ids: selected,
       tags: [],
       memo: null,
-    });
+    };
+    const result = outfitId
+      ? await updateOutfit(outfitId, payload)
+      : await createOutfit(payload);
     if ("error" in result) {
       show(result.error, "error");
       setSaving(false);
       return;
     }
-    show("코디를 저장했어요.", "success");
-    router.push("/outfits");
+    show(isEdit ? "수정했어요." : "코디를 저장했어요.", "success");
+    router.push(outfitId ? `/outfits/${outfitId}` : "/outfits");
     router.refresh();
   };
 
@@ -210,6 +220,8 @@ export function OutfitBuilder({
         <Button type="button" fullWidth onClick={save} disabled={saving}>
           {saving ? (
             <Loader2 size={18} className={css({ animation: "spin 1s linear infinite" })} />
+          ) : isEdit ? (
+            `수정 완료 (${selected.length})`
           ) : (
             `코디 저장 (${selected.length})`
           )}

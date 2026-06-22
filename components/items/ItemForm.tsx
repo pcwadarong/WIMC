@@ -8,15 +8,16 @@ import { Input } from "@/components/ui/Input";
 import { Chip } from "@/components/ui/Chip";
 import { useToast } from "@/components/ui/Toast";
 import { ColorPicker } from "@/components/ui/ColorPicker";
-import { ImageUpload, type LocalImage } from "@/components/items/ImageUpload";
+import { ImageUpload, type EditableImage } from "@/components/items/ImageUpload";
 import { SizeInput } from "@/components/items/SizeInput";
 import { MaterialInput } from "@/components/items/MaterialInput";
 import { createClient } from "@/lib/supabase/client";
-import { createItem } from "@/app/(app)/closet/actions";
+import { createItem, updateItem } from "@/app/(app)/closet/actions";
 import { SEASON_LABELS, ITEM_STATUS_LABELS } from "@/types";
 import type {
   CategoryNode,
   ColorValue,
+  Item,
   ItemImage,
   ItemStatus,
   Season,
@@ -84,24 +85,46 @@ function Section({
   );
 }
 
-export function ItemForm({ categories }: { categories: CategoryNode[] }) {
+export function ItemForm({
+  categories,
+  item,
+}: {
+  categories: CategoryNode[];
+  item?: Item;
+}) {
   const router = useRouter();
   const { show } = useToast();
+  const isEdit = Boolean(item);
 
-  const [images, setImages] = useState<LocalImage[]>([]);
-  const [name, setName] = useState("");
-  const [parentId, setParentId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [colors, setColors] = useState<ColorValue[]>([]);
-  const [material, setMaterial] = useState("");
-  const [season, setSeason] = useState<Season>("all");
-  const [status, setStatus] = useState<ItemStatus>("owned");
-  const [memo, setMemo] = useState("");
-  const [brand, setBrand] = useState("");
-  const [purchaseFrom, setPurchaseFrom] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState("");
-  const [purchaseDate, setPurchaseDate] = useState("");
-  const [sizeInfo, setSizeInfo] = useState<SizeInfo>({});
+  const initialParent = item?.category_id
+    ? categories.find((c) =>
+        c.children.some((ch) => ch.id === item.category_id),
+      )
+    : undefined;
+
+  const [images, setImages] = useState<EditableImage[]>(() =>
+    (item?.images ?? []).map((im, idx) => ({
+      id: `ex${idx}`,
+      kind: "existing" as const,
+      url: im.url,
+      bg_removed: im.bg_removed,
+    })),
+  );
+  const [name, setName] = useState(item?.name ?? "");
+  const [parentId, setParentId] = useState(initialParent?.id ?? "");
+  const [categoryId, setCategoryId] = useState(item?.category_id ?? "");
+  const [colors, setColors] = useState<ColorValue[]>(item?.colors ?? []);
+  const [material, setMaterial] = useState(item?.material ?? "");
+  const [season, setSeason] = useState<Season>(item?.season ?? "all");
+  const [status, setStatus] = useState<ItemStatus>(item?.status ?? "owned");
+  const [memo, setMemo] = useState(item?.memo ?? "");
+  const [brand, setBrand] = useState(item?.brand ?? "");
+  const [purchaseFrom, setPurchaseFrom] = useState(item?.purchase_from ?? "");
+  const [purchasePrice, setPurchasePrice] = useState(
+    item?.purchase_price != null ? String(item.purchase_price) : "",
+  );
+  const [purchaseDate, setPurchaseDate] = useState(item?.purchase_date ?? "");
+  const [sizeInfo, setSizeInfo] = useState<SizeInfo>(item?.size_info ?? {});
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -112,16 +135,21 @@ export function ItemForm({ categories }: { categories: CategoryNode[] }) {
   const subCategories = parentCategory?.children ?? [];
   const parentName = parentCategory?.name;
 
-  const uploadImages = async () => {
+  // 기존 이미지는 URL 유지, 새 이미지는 업로드. 순서대로(첫 번째=대표)
+  const buildImages = async (): Promise<ItemImage[]> => {
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) throw new Error("로그인이 필요합니다.");
 
-    const uploaded: ItemImage[] = [];
+    const result: ItemImage[] = [];
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
+      if (img.kind === "existing") {
+        result.push({ url: img.url, is_primary: i === 0, bg_removed: img.bg_removed });
+        continue;
+      }
       const ext = img.file.type.split("/")[1] || "webp";
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
@@ -129,9 +157,9 @@ export function ItemForm({ categories }: { categories: CategoryNode[] }) {
         .upload(path, img.file, { contentType: img.file.type });
       if (upErr) throw new Error(`이미지 업로드 실패: ${upErr.message}`);
       const { data: pub } = supabase.storage.from("items").getPublicUrl(path);
-      uploaded.push({ url: pub.publicUrl, is_primary: i === 0, bg_removed: false });
+      result.push({ url: pub.publicUrl, is_primary: i === 0, bg_removed: false });
     }
-    return uploaded;
+    return result;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,8 +170,8 @@ export function ItemForm({ categories }: { categories: CategoryNode[] }) {
     }
     setSubmitting(true);
     try {
-      const uploadedImages = await uploadImages();
-      const result = await createItem({
+      const built = await buildImages();
+      const payload = {
         name,
         category_id: categoryId || null,
         brand: brand.trim() || null,
@@ -154,20 +182,23 @@ export function ItemForm({ categories }: { categories: CategoryNode[] }) {
         material: material.trim() || null,
         season,
         colors,
-        size_info:
-          Object.keys(sizeInfo).length > 0 ? sizeInfo : null,
-        images: uploadedImages,
-        is_favorite: false,
+        size_info: Object.keys(sizeInfo).length > 0 ? sizeInfo : null,
+        images: built,
+        is_favorite: item?.is_favorite ?? false,
         status,
-      });
+      };
+
+      const result = item
+        ? await updateItem(item.id, payload)
+        : await createItem(payload);
 
       if ("error" in result) {
         show(result.error, "error");
         setSubmitting(false);
         return;
       }
-      show("아이템을 저장했어요.", "success");
-      router.push("/closet");
+      show(isEdit ? "수정했어요." : "아이템을 저장했어요.", "success");
+      router.push(item ? `/closet/${item.id}` : "/closet");
       router.refresh();
     } catch (err) {
       show(err instanceof Error ? err.message : "저장에 실패했어요.", "error");
@@ -240,7 +271,7 @@ export function ItemForm({ categories }: { categories: CategoryNode[] }) {
 
         <div>
           <span className={fieldLabel}>소재</span>
-          <MaterialInput onChange={setMaterial} />
+          <MaterialInput initial={item?.material ?? undefined} onChange={setMaterial} />
         </div>
 
         <div>
@@ -353,6 +384,8 @@ export function ItemForm({ categories }: { categories: CategoryNode[] }) {
               />
               저장 중…
             </>
+          ) : isEdit ? (
+            "수정 완료"
           ) : (
             "저장"
           )}

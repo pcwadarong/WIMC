@@ -40,6 +40,36 @@ export async function createOutfit(input: OutfitInput): Promise<ActionResult> {
   return { ok: true, id: data?.id as string };
 }
 
+export async function updateOutfit(
+  id: string,
+  input: OutfitInput,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+  if (input.item_ids.length === 0)
+    return { error: "아이템을 1개 이상 선택해주세요." };
+
+  const { error } = await supabase
+    .from("outfits")
+    .update({
+      name: input.name?.trim() || null,
+      item_ids: input.item_ids,
+      tags: input.tags,
+      memo: input.memo?.trim() || null,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/outfits");
+  revalidatePath(`/outfits/${id}`);
+  return { ok: true, id };
+}
+
 export async function deleteOutfit(id: string): Promise<ActionResult> {
   const supabase = await createClient();
   const {
