@@ -40,6 +40,12 @@ export default async function CalendarPage({
   const logsByDate: Record<string, DailyLog> = {};
   for (const l of logs) logsByDate[l.date] = l;
 
+  // 이번 달 요약: 등록 수 / 지출
+  const monthAdded = items.filter((it) => it.created_at?.startsWith(ym)).length;
+  const monthSpend = items
+    .filter((it) => it.purchase_date?.startsWith(ym))
+    .reduce((s, it) => s + (it.purchase_price ?? 0), 0);
+
   const thumb = (log: DailyLog): string | null => {
     if (log.photo_url) return log.photo_url;
     if (log.outfit_id) {
@@ -209,20 +215,48 @@ export default async function CalendarPage({
         })}
       </div>
 
-      {/* 요약 */}
-      <div
+      {/* 이번 달 분석 요약 */}
+      <section
         className={css({
           marginTop: "8",
-          paddingTop: "4",
-          borderTopWidth: "1px",
-          borderTopStyle: "solid",
-          borderTopColor: "border",
-          fontSize: "sm",
-          color: "text.secondary",
+          bg: "surface",
+          borderRadius: "md",
+          boxShadow: "card",
+          padding: "5",
         })}
       >
-        이번 달 <b className={css({ color: "text.primary" })}>{logs.length}일</b> 기록
-      </div>
+        <div
+          className={css({
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            marginBottom: "4",
+          })}
+        >
+          <h2 className={css({ textStyle: "lg", fontWeight: 700, color: "text.primary" })}>
+            이번 달 분석
+          </h2>
+          <Link href="/stats" className={css({ fontSize: "sm", color: "text.secondary" })}>
+            전체 분석 보기
+          </Link>
+        </div>
+        <div className={css({ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2" })}>
+          {[
+            { label: "착용 기록", value: `${logs.length}일` },
+            { label: "등록", value: `${monthAdded}개` },
+            { label: "지출", value: `${monthSpend.toLocaleString("ko-KR")}원` },
+          ].map((x) => (
+            <div key={x.label} className={css({ textAlign: "center" })}>
+              <p className={css({ textStyle: "lg", fontWeight: 800, color: "brown.dark" })}>
+                {x.value}
+              </p>
+              <p className={css({ fontSize: "xs", color: "text.tertiary", marginTop: "0.5" })}>
+                {x.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <Fab href="/calendar/new" label="기록 추가" />
     </PageContainer>

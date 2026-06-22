@@ -1,30 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Heart, SlidersHorizontal, X } from "lucide-react";
+import { Search, Heart, ShoppingBag, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { BottomSheet } from "@/components/ui/BottomSheet";
-import { ClosetGrid } from "@/components/items/ClosetGrid";
-import {
-  SEASON_LABELS,
-  ITEM_STATUS_LABELS,
-  type Season,
-  type ItemStatus,
-  type Item,
-} from "@/types";
+import { ItemCard } from "@/components/items/ItemCard";
+import { SEASON_LABELS, type Season, type Item } from "@/types";
 import type { CategoryMap } from "@/lib/recommend";
 import { sortItems, ITEM_SORT_LABELS, type ItemSort } from "@/lib/utils/item";
 import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
 
-const SORTS = Object.keys(ITEM_SORT_LABELS) as ItemSort[];
-
 const MATERIALS = ["면", "폴리에스터", "울", "아크릴", "나일론", "린넨", "데님", "가죽", "캐시미어"];
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
-const STATUSES = Object.keys(ITEM_STATUS_LABELS) as ItemStatus[];
-
-const chip = (active: boolean) => chipClass({ active, variant: "fill", size: "sm" });
-const sheetChip = (active: boolean) => chipClass({ active, variant: "outline", size: "sm" });
+const SORTS = Object.keys(ITEM_SORT_LABELS) as ItemSort[];
 
 const sheetSectionTitle = css({
   fontSize: "sm",
@@ -37,20 +26,18 @@ export function ClosetView({
   items,
   categoryMap,
   parents,
-  profileNote,
 }: {
   items: Item[];
   categoryMap: CategoryMap;
   parents: string[];
-  profileNote?: string;
 }) {
   const [cat, setCat] = useState("");
   const [fav, setFav] = useState(false);
+  const [wishlist, setWishlist] = useState(false);
   const [search, setSearch] = useState("");
   const [colors, setColors] = useState<string[]>([]);
   const [materials, setMaterials] = useState<string[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
-  const [statuses, setStatuses] = useState<ItemStatus[]>([]);
   const [sort, setSort] = useState<ItemSort>("recent");
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -64,6 +51,9 @@ export function ClosetView({
   const filtered = useMemo(
     () =>
       items.filter((it) => {
+        // 위시리스트(구매고민)는 기본 목록에서 분리
+        if (wishlist ? it.status !== "wishlist" : it.status === "wishlist")
+          return false;
         if (cat) {
           const pn = it.category_id ? categoryMap[it.category_id]?.parentName : undefined;
           if (pn !== cat) return false;
@@ -76,15 +66,13 @@ export function ClosetView({
         if (materials.length && !materials.some((m) => (it.material ?? "").includes(m)))
           return false;
         if (seasons.length && !(it.season && seasons.includes(it.season))) return false;
-        if (statuses.length && !statuses.includes(it.status)) return false;
         return true;
       }),
-    [items, cat, fav, search, colors, materials, seasons, statuses, categoryMap],
+    [items, wishlist, cat, fav, search, colors, materials, seasons, categoryMap],
   );
 
   const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort]);
-
-  const activeCount = colors.length + materials.length + seasons.length + statuses.length;
+  const activeCount = colors.length + materials.length + seasons.length;
 
   const toggle = <T,>(list: T[], set: (v: T[]) => void, v: T) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -93,36 +81,15 @@ export function ClosetView({
     setColors([]);
     setMaterials([]);
     setSeasons([]);
-    setStatuses([]);
   };
 
   return (
     <>
-      {/* 헤더 */}
-      <div
-        className={css({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "4",
-        })}
-      >
-        <h1 className={css({ textStyle: "2xl", fontWeight: 700, color: "text.primary" })}>
-          옷장
-        </h1>
-        <button
-          type="button"
-          onClick={() => setFav((v) => !v)}
-          aria-pressed={fav}
-          aria-label="즐겨찾기만 보기"
-          className={chip(fav)}
-        >
-          <Heart size={15} fill={fav ? "currentColor" : "none"} />
-          즐겨찾기
-        </button>
-      </div>
+      <h1 className={css({ textStyle: "2xl", fontWeight: 700, color: "text.primary", marginBottom: "4" })}>
+        {wishlist ? "위시리스트" : "옷장"}
+      </h1>
 
-      {/* 검색 + 필터 버튼 */}
+      {/* 검색 + 필터 */}
       <div className={css({ display: "flex", gap: "2", marginBottom: "3" })}>
         <div
           className={css({
@@ -191,29 +158,49 @@ export function ClosetView({
           "&::-webkit-scrollbar": { display: "none" },
         })}
       >
-        <button type="button" className={chip(!cat)} onClick={() => setCat("")}>
+        <button type="button" className={chipClass({ active: !cat, variant: "fill", size: "sm" })} onClick={() => setCat("")}>
           전체
         </button>
         {parents.map((p) => (
-          <button key={p} type="button" className={chip(cat === p)} onClick={() => setCat(p)}>
+          <button key={p} type="button" className={chipClass({ active: cat === p, variant: "fill", size: "sm" })} onClick={() => setCat(p)}>
             {p}
           </button>
         ))}
       </div>
 
-      {/* 개수 + 정렬 */}
+      {/* 빠른 필터 + 정렬 */}
       <div
         className={css({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginTop: "4",
-          marginBottom: "1",
+          gap: "2",
+          marginTop: "3",
         })}
       >
-        <span className={css({ fontSize: "sm", color: "text.tertiary" })}>
-          {sorted.length}개
-        </span>
+        <div className={css({ display: "flex", gap: "2" })}>
+          <button
+            type="button"
+            onClick={() => setFav((v) => !v)}
+            aria-pressed={fav}
+            className={chipClass({ active: fav, variant: "fill", size: "sm" })}
+          >
+            <Heart size={14} fill={fav ? "currentColor" : "none"} />
+            즐겨찾기
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setWishlist((v) => !v);
+              setFav(false);
+            }}
+            aria-pressed={wishlist}
+            className={chipClass({ active: wishlist, variant: "fill", size: "sm" })}
+          >
+            <ShoppingBag size={14} />
+            위시리스트
+          </button>
+        </div>
         <select
           aria-label="정렬"
           value={sort}
@@ -225,6 +212,7 @@ export function ClosetView({
             fontSize: "sm",
             color: "text.secondary",
             cursor: "pointer",
+            flexShrink: 0,
             _focusVisible: { outline: "none" },
           })}
         >
@@ -239,10 +227,21 @@ export function ClosetView({
       {/* 결과 */}
       {sorted.length === 0 ? (
         <p className={css({ marginTop: "10", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
-          조건에 맞는 아이템이 없어요.
+          {wishlist ? "위시리스트가 비어 있어요. 아이템 상태를 ‘구매고민’으로 등록해보세요." : "조건에 맞는 아이템이 없어요."}
         </p>
       ) : (
-        <ClosetGrid items={sorted} categoryMap={categoryMap} profileNote={profileNote} />
+        <div
+          className={css({
+            marginTop: "4",
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "4",
+          })}
+        >
+          {sorted.map((item) => (
+            <ItemCard key={item.id} item={item} />
+          ))}
+        </div>
       )}
 
       {/* 필터 바텀시트 */}
@@ -256,7 +255,7 @@ export function ClosetView({
               초기화
             </Button>
             <Button type="button" onClick={() => setSheetOpen(false)} className={css({ flex: 1 })}>
-              {filtered.length}개 보기
+              {sorted.length}개 보기
             </Button>
           </div>
         }
@@ -270,7 +269,7 @@ export function ClosetView({
                   <button
                     key={c.label}
                     type="button"
-                    className={sheetChip(colors.includes(c.label))}
+                    className={chipClass({ active: colors.includes(c.label), size: "sm" })}
                     onClick={() => toggle(colors, setColors, c.label)}
                   >
                     <span
@@ -288,7 +287,7 @@ export function ClosetView({
             <p className={sheetSectionTitle}>소재</p>
             <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
               {MATERIALS.map((m) => (
-                <button key={m} type="button" className={sheetChip(materials.includes(m))} onClick={() => toggle(materials, setMaterials, m)}>
+                <button key={m} type="button" className={chipClass({ active: materials.includes(m), size: "sm" })} onClick={() => toggle(materials, setMaterials, m)}>
                   {m}
                 </button>
               ))}
@@ -299,19 +298,8 @@ export function ClosetView({
             <p className={sheetSectionTitle}>시즌</p>
             <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
               {SEASONS.map((s) => (
-                <button key={s} type="button" className={sheetChip(seasons.includes(s))} onClick={() => toggle(seasons, setSeasons, s)}>
+                <button key={s} type="button" className={chipClass({ active: seasons.includes(s), size: "sm" })} onClick={() => toggle(seasons, setSeasons, s)}>
                   {SEASON_LABELS[s]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className={sheetSectionTitle}>상태</p>
-            <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
-              {STATUSES.map((s) => (
-                <button key={s} type="button" className={sheetChip(statuses.includes(s))} onClick={() => toggle(statuses, setStatuses, s)}>
-                  {ITEM_STATUS_LABELS[s]}
                 </button>
               ))}
             </div>

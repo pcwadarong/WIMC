@@ -1,23 +1,16 @@
 import { getCategoryTree } from "@/lib/data/categories";
 import { getItems } from "@/lib/data/items";
-import { getProfile } from "@/lib/data/profile";
 import { ClosetView } from "@/components/items/ClosetView";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Fab } from "@/components/ui/Fab";
-import { buildProfileNote } from "@/lib/profile-note";
 import { buildCategoryMap } from "@/lib/utils/category";
 import { css } from "@/styled-system/css";
 
 export default async function ClosetPage() {
-  const [items, categories, profile] = await Promise.all([
-    getItems(),
-    getCategoryTree(),
-    getProfile(),
-  ]);
+  const [items, categories] = await Promise.all([getItems(), getCategoryTree()]);
 
   const categoryMap = buildCategoryMap(categories);
   const parents = categories.map((c) => c.name);
-  const profileNote = buildProfileNote(profile);
 
   return (
     <PageContainer>
@@ -31,12 +24,7 @@ export default async function ClosetPage() {
           </p>
         </>
       ) : (
-        <ClosetView
-          items={items}
-          categoryMap={categoryMap}
-          parents={parents}
-          profileNote={profileNote}
-        />
+        <ClosetView items={items} categoryMap={categoryMap} parents={parents} />
       )}
 
       <Fab href="/closet/new" label="아이템 추가" />

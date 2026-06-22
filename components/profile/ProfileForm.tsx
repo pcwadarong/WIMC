@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   Loader2,
   Sparkles,
@@ -12,7 +11,6 @@ import {
   Settings,
   Copy,
   MapPin,
-  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -84,13 +82,7 @@ const menuRow = (danger = false) =>
     },
 });
 
-export function ProfileForm({
-  initial,
-  email,
-}: {
-  initial: Profile | null;
-  email: string;
-}) {
+export function ProfileForm({ initial }: { initial: Profile | null }) {
   const { show } = useToast();
 
   const [editing, setEditing] = useState(false);
@@ -104,9 +96,6 @@ export function ProfileForm({
     initial?.profile_photos ?? null,
   );
   const [saving, setSaving] = useState(false);
-
-  const displayName = username.trim() || email.split("@")[0] || "나";
-  const initialLetter = displayName.charAt(0).toUpperCase();
 
   const toggleKeyword = (k: string) =>
     setKeywords((prev) =>
@@ -152,39 +141,12 @@ export function ProfileForm({
   return (
     <div
       className={css({
-        paddingX: "5",
         paddingBottom: "10",
         display: "flex",
         flexDirection: "column",
         gap: "4",
       })}
     >
-      {/* 프로필 헤더 */}
-      <div
-        className={cx(card, css({ display: "flex", alignItems: "center", gap: "4" }))}
-      >
-        <div
-          className={css({
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "56px",
-            height: "56px",
-            borderRadius: "full",
-            bg: "brown.dark",
-            color: "white",
-            fontSize: "xl",
-            fontWeight: 700,
-            flexShrink: 0,
-          })}
-        >
-          {initialLetter}
-        </div>
-        <p className={css({ textStyle: "xl", fontWeight: 700, color: "text.primary" })}>
-          {displayName}
-        </p>
-      </div>
-
       {/* 나의 스타일 */}
       <section className={card}>
         <div
@@ -282,7 +244,7 @@ export function ProfileForm({
                 })}
               >
                 <span className={css({ fontSize: "sm", fontWeight: 500, color: "text.secondary" })}>
-                  AI 스타일 분석
+                  스타일 분석
                 </span>
                 <button
                   type="button"
@@ -434,11 +396,6 @@ export function ProfileForm({
           overflow: "hidden",
         })}
       >
-        <Link href="/stats" className={menuRow()}>
-          <BarChart3 size={18} className={css({ color: "text.secondary" })} />
-          <span className={css({ flex: 1 })}>분석</span>
-          <ChevronRight size={18} className={css({ color: "text.tertiary" })} />
-        </Link>
         <button
           type="button"
           className={menuRow()}

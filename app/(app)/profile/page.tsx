@@ -1,19 +1,24 @@
 import { getProfile } from "@/lib/data/profile";
 import { ProfileForm } from "@/components/profile/ProfileForm";
-import { TopBar } from "@/components/layout/TopBar";
-import { createClient } from "@/lib/supabase/server";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { css } from "@/styled-system/css";
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   const profile = await getProfile();
 
   return (
-    <>
-      <TopBar title="마이페이지" />
-      <ProfileForm initial={profile} email={user?.email ?? ""} />
-    </>
+    <PageContainer>
+      <h1
+        className={css({
+          textStyle: "2xl",
+          fontWeight: 700,
+          color: "text.primary",
+          marginBottom: "5",
+        })}
+      >
+        마이
+      </h1>
+      <ProfileForm initial={profile} />
+    </PageContainer>
   );
 }
