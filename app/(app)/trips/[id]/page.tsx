@@ -1,0 +1,83 @@
+import { notFound } from "next/navigation";
+import { getTrip } from "@/lib/data/trips";
+import { getOutfits } from "@/lib/data/outfits";
+import { getItems } from "@/lib/data/items";
+import { buildOutfitThumbs, indexById } from "@/lib/utils/item";
+import { TripDayPlanner } from "@/components/trips/TripDayPlanner";
+import { DeleteTripButton } from "@/components/trips/DeleteTripButton";
+import { TopBar } from "@/components/layout/TopBar";
+import { css } from "@/styled-system/css";
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+function dateRange(start: string, end: string): string[] {
+  const out: string[] = [];
+  const s = new Date(`${start}T00:00:00`);
+  const e = new Date(`${end}T00:00:00`);
+  let guard = 0;
+  for (const d = s; d <= e && guard < 90; d.setDate(d.getDate() + 1), guard++) {
+    out.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+  }
+  return out;
+}
+
+export default async function TripPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const result = await getTrip(id);
+  if (!result) notFound();
+  const { trip, days } = result;
+
+  const [outfits, items] = await Promise.all([getOutfits(), getItems()]);
+  const outfitThumbs = buildOutfitThumbs(outfits, indexById(items));
+
+  const dates =
+    trip.start_date && trip.end_date
+      ? dateRange(trip.start_date, trip.end_date)
+      : [];
+  const initial: Record<string, string | null> = {};
+  for (const dd of days) initial[dd.date] = dd.outfit_id;
+
+  return (
+    <>
+      <TopBar back title={trip.name} />
+      <div className={css({ paddingX: "5", paddingBottom: "10" })}>
+        <h1 className={css({ textStyle: "2xl", fontWeight: 700, color: "text.primary", marginTop: "4" })}>
+          {trip.name}
+        </h1>
+        <p className={css({ marginTop: "1", fontSize: "sm", color: "text.secondary" })}>
+          {[trip.destination, trip.start_date && `${trip.start_date}${trip.end_date ? ` ~ ${trip.end_date}` : ""}`]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+        {trip.memo && (
+          <p className={css({ marginTop: "3", fontSize: "sm", color: "text.secondary", whiteSpace: "pre-wrap" })}>
+            {trip.memo}
+          </p>
+        )}
+
+        <h2 className={css({ textStyle: "lg", fontWeight: 700, color: "text.primary", marginTop: "8", marginBottom: "4" })}>
+          일차별 코디
+        </h2>
+        {dates.length === 0 ? (
+          <p className={css({ fontSize: "sm", color: "text.tertiary" })}>
+            시작일·종료일을 설정하면 일차별로 코디를 계획할 수 있어요.
+          </p>
+        ) : outfitThumbs.length === 0 ? (
+          <p className={css({ fontSize: "sm", color: "text.tertiary" })}>
+            코디를 먼저 만들면 여기서 일차별로 배치할 수 있어요.
+          </p>
+        ) : (
+          <TripDayPlanner tripId={trip.id} dates={dates} initial={initial} outfits={outfitThumbs} />
+        )}
+
+        <div className={css({ marginTop: "8" })}>
+          <DeleteTripButton id={trip.id} />
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,32 @@
+{
+  "name": "wimc",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "panda codegen && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "prepare": "panda codegen"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "browser-image-compression": "^2.0.2",
+    "html2canvas": "^1.4.1",
+    "lucide-react": "^1.21.0",
+    "next": "^15",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^1.11.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^15",
+    "typescript": "^5"
+  }
+}

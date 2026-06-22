@@ -1,0 +1,81 @@
+/* Panda CSS cascade layers (반드시 최상단) */
+@layer reset, base, tokens, recipes, utilities;
+
+/* Pretendard 가변 폰트 (device font 우선, CDN 로드) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+/* ============================================
+   디자인 토큰 — raw CSS 변수 (design.md §2)
+   Panda 토큰과 별개로, 손으로 쓰는 CSS에서도 사용 가능
+   ============================================ */
+:root {
+  /* Primary */
+  --color-brown-dark: #2c1a0e;
+  --color-brown-mid: #6b3f2a;
+  --color-brown-light: #c4956a;
+
+  /* Background */
+  --color-bg: #fafaf8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f2ee;
+
+  /* Text */
+  --color-text-primary: #1a1208;
+  --color-text-secondary: #6b6560;
+  --color-text-tertiary: #b0aba6;
+
+  /* Border */
+  --color-border: #e8e4de;
+  --color-border-focus: #2c1a0e;
+
+  /* Semantic */
+  --color-error: #c0392b;
+  --color-success: #27ae60;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Shadow */
+  --shadow-card: 0 1px 3px rgba(44, 26, 14, 0.06), 0 1px 2px rgba(44, 26, 14, 0.04);
+  --shadow-modal: 0 20px 60px rgba(44, 26, 14, 0.15);
+
+  /* 레이아웃 */
+  --app-max-width: 430px;
+  --bottom-nav-height: 64px;
+
+  color-scheme: light;
+}
+
+/* element 리셋은 base 레이어에 둔다 — Panda utilities(색상 등)가 항상 이기도록 */
+@layer base {
+  /* iOS 입력 줌 방지 + 스크롤바로 인한 레이아웃 쉬프트 방지
+     (페이지마다 스크롤바 유무가 달라 가운데 정렬이 밀리는 현상 → 항상 스크롤바 공간 확보) */
+  html {
+    -webkit-text-size-adjust: 100%;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
