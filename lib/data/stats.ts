@@ -19,16 +19,33 @@ export interface WearRow {
   item: Item;
   count: number;
 }
+export interface CostPerWearRow {
+  item: Item;
+  cpw: number;
+  wears: number;
+}
+export interface MonthSpend {
+  month: string; // YYYY-MM
+  total: number;
+}
+export interface StaleRow {
+  item: Item;
+  days: number;
+}
 
 export interface Stats {
   itemCount: number;
   outfitCount: number;
   logCount: number;
+  totalSpend: number;
   byCategory: CountRow[];
   byColor: CountRow[];
   byBrand: BrandRow[];
   topWorn: WearRow[];
   neverWorn: Item[];
+  costPerWear: CostPerWearRow[];
+  monthlySpend: MonthSpend[];
+  staleItems: StaleRow[];
   styleKeywords: string[];
 }
 
@@ -91,11 +108,14 @@ export async function getStats(): Promise<Stats> {
   const outfitById = new Map(outfits.map((o) => [o.id, o]));
 
   const wear: Record<string, number> = {};
+  const lastWorn: Record<string, string> = {}; // itemId → 최근 착용 date
   for (const log of logs) {
     if (!log.outfit_id) continue;
     const o = outfitById.get(log.outfit_id);
     for (const iid of o?.item_ids ?? []) {
-      if (itemsById[iid]) wear[iid] = (wear[iid] ?? 0) + 1;
+      if (!itemsById[iid]) continue;
+      wear[iid] = (wear[iid] ?? 0) + 1;
+      if (!lastWorn[iid] || log.date > lastWorn[iid]) lastWorn[iid] = log.date;
     }
   }
 
@@ -109,15 +129,58 @@ export async function getStats(): Promise<Stats> {
     .filter((it) => it.status === "owned" && !wear[it.id])
     .slice(0, 6);
 
+  // 총 지출 + 착용당 비용(가성비: 착용한 옷 중 cpw 낮은 순)
+  const totalSpend = items.reduce((s, it) => s + (it.purchase_price ?? 0), 0);
+  const costPerWear = items
+    .filter((it) => it.purchase_price && wear[it.id] > 0)
+    .map((it) => ({
+      item: it,
+      wears: wear[it.id],
+      cpw: Math.round((it.purchase_price as number) / wear[it.id]),
+    }))
+    .sort((a, b) => a.cpw - b.cpw)
+    .slice(0, 5);
+
+  // 월별 지출 추이 (최근 12개월)
+  const spendByMonth: Record<string, number> = {};
+  for (const it of items) {
+    if (it.purchase_date && it.purchase_price) {
+      const m = it.purchase_date.slice(0, 7);
+      spendByMonth[m] = (spendByMonth[m] ?? 0) + it.purchase_price;
+    }
+  }
+  const monthlySpend = Object.entries(spendByMonth)
+    .map(([month, total]) => ({ month, total }))
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .slice(-12);
+
+  // 미착용 기간 (착용 이력 있는 보유 옷 중 가장 오래 안 입은 순)
+  const now = new Date();
+  const staleItems = items
+    .filter((it) => it.status === "owned" && lastWorn[it.id])
+    .map((it) => {
+      const diff = Math.floor(
+        (now.getTime() - new Date(`${lastWorn[it.id]}T00:00:00`).getTime()) /
+          86400000,
+      );
+      return { item: it, days: Math.max(0, diff) };
+    })
+    .sort((a, b) => b.days - a.days)
+    .slice(0, 5);
+
   return {
     itemCount: items.length,
     outfitCount: outfits.length,
     logCount: logs.length,
+    totalSpend,
     byCategory,
     byColor,
     byBrand,
     topWorn,
     neverWorn,
+    costPerWear,
+    monthlySpend,
+    staleItems,
     styleKeywords: profile?.style_keywords ?? [],
   };
 }

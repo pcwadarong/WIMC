@@ -18,11 +18,13 @@ function Bar({
   count,
   max,
   hex,
+  valueLabel,
 }: {
   label: string;
   count: number;
   max: number;
   hex?: string;
+  valueLabel?: string;
 }) {
   const pct = max > 0 ? Math.round((count / max) * 100) : 0;
   return (
@@ -68,8 +70,17 @@ function Bar({
           style={{ width: `${pct}%` }}
         />
       </span>
-      <span className={css({ width: "28px", textAlign: "right", fontSize: "sm", fontWeight: 600, color: "text.primary" })}>
-        {count}
+      <span
+        className={css({
+          width: valueLabel ? "64px" : "28px",
+          flexShrink: 0,
+          textAlign: "right",
+          fontSize: valueLabel ? "xs" : "sm",
+          fontWeight: 600,
+          color: "text.primary",
+        })}
+      >
+        {valueLabel ?? count}
       </span>
     </div>
   );
@@ -101,6 +112,7 @@ export default async function StatsPage() {
   const s = await getStats();
   const catMax = Math.max(1, ...s.byCategory.map((c) => c.count));
   const colorMax = Math.max(1, ...s.byColor.map((c) => c.count));
+  const monthMax = Math.max(1, ...s.monthlySpend.map((m) => m.total));
 
   return (
     <PageContainer>
@@ -127,6 +139,34 @@ export default async function StatsPage() {
               </div>
             ))}
           </div>
+
+          {/* 총 지출 */}
+          {s.totalSpend > 0 && (
+            <section className={cx(card, css({ display: "flex", alignItems: "baseline", justifyContent: "space-between" }))}>
+              <span className={css({ fontSize: "sm", color: "text.secondary" })}>총 지출</span>
+              <span className={css({ textStyle: "xl", fontWeight: 800, color: "brown.dark" })}>
+                {s.totalSpend.toLocaleString("ko-KR")}원
+              </span>
+            </section>
+          )}
+
+          {/* 월별 지출 추이 */}
+          {s.monthlySpend.length > 0 && (
+            <section className={card}>
+              <h2 className={sectionTitle}>월별 지출</h2>
+              <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
+                {s.monthlySpend.map((m) => (
+                  <Bar
+                    key={m.month}
+                    label={m.month.replace("-", ".")}
+                    count={m.total}
+                    max={monthMax}
+                    valueLabel={`${m.total.toLocaleString("ko-KR")}`}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* 카테고리 */}
           <section className={card}>
@@ -184,6 +224,24 @@ export default async function StatsPage() {
             </section>
           )}
 
+          {/* 착용당 비용 (가성비) */}
+          {s.costPerWear.length > 0 && (
+            <section className={card}>
+              <h2 className={sectionTitle}>가성비 좋은 옷 (착용당 비용)</h2>
+              <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
+                {s.costPerWear.map((w) => (
+                  <div key={w.item.id} className={css({ flexShrink: 0, width: "64px", textAlign: "center" })}>
+                    <Thumb url={primaryImageUrl(w.item)} href={`/closet/${w.item.id}`} />
+                    <p className={css({ fontSize: "xs", fontWeight: 600, color: "text.primary", marginTop: "1" })}>
+                      {w.cpw.toLocaleString("ko-KR")}원
+                    </p>
+                    <p className={css({ fontSize: "xs", color: "text.tertiary" })}>/{w.wears}회</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* 안 입은 옷 발굴 */}
           {s.neverWorn.length > 0 && (
             <section className={card}>
@@ -191,6 +249,21 @@ export default async function StatsPage() {
               <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
                 {s.neverWorn.map((it) => (
                   <Thumb key={it.id} url={primaryImageUrl(it)} href={`/closet/${it.id}`} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 미착용 기간 */}
+          {s.staleItems.length > 0 && (
+            <section className={card}>
+              <h2 className={sectionTitle}>오래 안 입은 옷</h2>
+              <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
+                {s.staleItems.map((w) => (
+                  <div key={w.item.id} className={css({ flexShrink: 0, width: "64px", textAlign: "center" })}>
+                    <Thumb url={primaryImageUrl(w.item)} href={`/closet/${w.item.id}`} />
+                    <p className={css({ fontSize: "xs", color: "text.tertiary", marginTop: "1" })}>{w.days}일 전</p>
+                  </div>
                 ))}
               </div>
             </section>
