@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
@@ -9,6 +10,7 @@ import { deleteTrip } from "@/app/(app)/trips/actions";
 
 export function DeleteTripButton({ id }: { id: string }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { show } = useToast();
   const [pending, setPending] = useState(false);
 
@@ -22,8 +24,8 @@ export function DeleteTripButton({ id }: { id: string }) {
       return;
     }
     show("삭제했어요.", "success");
+    queryClient.invalidateQueries({ queryKey: ["trips"] });
     router.push("/trips");
-    router.refresh();
   };
 
   return (

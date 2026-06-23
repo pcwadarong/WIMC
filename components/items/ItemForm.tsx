@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -23,7 +24,8 @@ import type {
   Season,
   SizeInfo,
 } from "@/types";
-import { css } from "@/styled-system/css";
+import { fieldStyle } from "@/components/ui/styles";
+import { css, cx } from "@/styled-system/css";
 
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
 const STATUSES = Object.keys(ITEM_STATUS_LABELS) as ItemStatus[];
@@ -41,18 +43,10 @@ const sectionGap = css({
   gap: "4",
 });
 
-const select = css({
-  width: "100%",
-  height: "52px",
-  paddingX: "4",
-  bg: "surface.muted",
-  borderRadius: "sm",
-  fontSize: "base",
-  color: "text.primary",
-  appearance: "none",
-  cursor: "pointer",
-  _focusVisible: { outline: "none" },
-});
+const select = cx(
+  fieldStyle,
+  css({ height: "52px", paddingX: "4", appearance: "none", cursor: "pointer" }),
+);
 
 const fieldLabel = css({
   display: "block",
@@ -93,6 +87,7 @@ export function ItemForm({
   item?: Item;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { show } = useToast();
   const isEdit = Boolean(item);
 
@@ -198,8 +193,9 @@ export function ItemForm({
         return;
       }
       show(isEdit ? "수정했어요." : "아이템을 저장했어요.", "success");
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
       router.push(item ? `/closet/${item.id}` : "/closet");
-      router.refresh();
     } catch (err) {
       show(err instanceof Error ? err.message : "저장에 실패했어요.", "error");
       setSubmitting(false);

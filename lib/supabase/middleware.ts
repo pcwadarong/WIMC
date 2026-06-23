@@ -36,10 +36,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // getUser()는 토큰을 검증하므로 반드시 호출해 세션을 갱신한다.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims()는 내부적으로 getSession()으로 세션을 갱신하고,
+  // 비대칭 서명키(JWKS)면 JWT를 로컬 검증한다(네트워크 왕복 0).
+  // 레거시 HS256이면 자동으로 getUser()로 폴백 → 기존과 동일하게 안전.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));

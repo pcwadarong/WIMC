@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   Loader2,
@@ -16,7 +17,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Chip } from "@/components/ui/Chip";
-import { cardSurface } from "@/components/ui/styles";
+import { cardSurface, fieldStyle } from "@/components/ui/styles";
 import { useToast } from "@/components/ui/Toast";
 import { ProfilePhotos } from "@/components/profile/ProfilePhotos";
 import { updateProfile } from "@/app/(app)/profile/actions";
@@ -34,18 +35,10 @@ const subLabel = css({
   color: "text.secondary",
 });
 
-const selectField = css({
-  width: "100%",
-  height: "48px",
-  paddingX: "3",
-  bg: "surface.muted",
-  borderRadius: "sm",
-  fontSize: "base",
-  color: "text.primary",
-  appearance: "none",
-  cursor: "pointer",
-  _focusVisible: { outline: "none" },
-});
+const selectField = cx(
+  fieldStyle,
+  css({ height: "48px", paddingX: "3", appearance: "none", cursor: "pointer" }),
+);
 
 const STYLE_KEYWORDS = [
   "미니멀",
@@ -85,6 +78,7 @@ const menuRow = (danger = false) =>
 
 export function ProfileForm({ initial }: { initial: Profile | null }) {
   const { show } = useToast();
+  const queryClient = useQueryClient();
 
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState(initial?.username ?? "");
@@ -118,6 +112,7 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
       return;
     }
     show("저장했어요.", "success");
+    queryClient.invalidateQueries({ queryKey: ["profile"] });
     setEditing(false);
   };
 
@@ -270,18 +265,10 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
                 onChange={(e) => setAnalysis(e.target.value)}
                 rows={10}
                 placeholder="‘분석 프롬프트 복사’를 복사하여 사용하는 AI와 대화한 후 마지막에 정리된 분석을 여기 붙여넣으세요."
-                className={css({
-                  width: "100%",
-                  padding: "4",
-                  bg: "surface.muted",
-                  borderRadius: "sm",
-                  fontSize: "sm",
-                  lineHeight: "1.7",
-                  color: "text.primary",
-                  resize: "vertical",
-                  _placeholder: { color: "text.tertiary" },
-                  _focusVisible: { outline: "none" },
-                })}
+                className={cx(
+                  fieldStyle,
+                  css({ padding: "4", fontSize: "sm", lineHeight: "1.7", resize: "vertical" }),
+                )}
               />
             </div>
 

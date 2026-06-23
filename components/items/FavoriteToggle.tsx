@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { toggleFavorite } from "@/app/(app)/closet/actions";
 import { css } from "@/styled-system/css";
@@ -13,7 +13,7 @@ export function FavoriteToggle({
   id: string;
   initial: boolean;
 }) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const [fav, setFav] = useState(initial);
   const [, startTransition] = useTransition();
 
@@ -22,7 +22,7 @@ export function FavoriteToggle({
     setFav(next);
     startTransition(async () => {
       await toggleFavorite(id, next);
-      router.refresh();
+      queryClient.invalidateQueries({ queryKey: ["items"] });
     });
   };
 

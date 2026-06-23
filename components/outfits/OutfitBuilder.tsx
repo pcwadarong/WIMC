@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Check, Loader2, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -30,6 +31,7 @@ export function OutfitBuilder({
   initialSelected?: string[];
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { show } = useToast();
   const isEdit = Boolean(outfitId);
 
@@ -71,12 +73,12 @@ export function OutfitBuilder({
       return;
     }
     show(isEdit ? "수정했어요." : "코디를 저장했어요.", "success");
+    queryClient.invalidateQueries({ queryKey: ["outfits"] });
     router.push(outfitId ? `/outfits/${outfitId}` : "/outfits");
-    router.refresh();
   };
 
   const tab = (active: boolean) =>
-    chipClass({ active, variant: "fill", size: "sm" });
+    chipClass({ active, size: "sm" });
 
   return (
     <div className={css({ paddingBottom: "32" })}>

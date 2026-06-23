@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { OutfitCard } from "@/components/outfits/OutfitCard";
-import type { Item, Outfit } from "@/types";
+import { useOutfits, useItems } from "@/lib/queries/hooks";
+import { indexById } from "@/lib/utils/item";
+import { GridSkeleton } from "@/components/ui/Skeleton";
 import { css } from "@/styled-system/css";
 
 type OutfitSort = "recent" | "oldest" | "name";
@@ -12,13 +14,10 @@ const SORTS: { key: OutfitSort; label: string }[] = [
   { key: "name", label: "이름순" },
 ];
 
-export function OutfitsList({
-  outfits,
-  itemsById,
-}: {
-  outfits: Outfit[];
-  itemsById: Record<string, Item>;
-}) {
+export function OutfitsList() {
+  const { data: outfits = [], isLoading } = useOutfits();
+  const { data: items = [] } = useItems();
+  const itemsById = useMemo(() => indexById(items), [items]);
   const [sort, setSort] = useState<OutfitSort>("recent");
 
   const sorted = useMemo(() => {
@@ -28,6 +27,16 @@ export function OutfitsList({
       return arr.sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"));
     return arr;
   }, [outfits, sort]);
+
+  if (isLoading) return <GridSkeleton />;
+
+  if (outfits.length === 0) {
+    return (
+      <p className={css({ marginTop: "12", textAlign: "center", color: "text.tertiary", fontSize: "sm" })}>
+        아직 만든 코디가 없어요. + 버튼으로 옷을 조합해보세요.
+      </p>
+    );
+  }
 
   return (
     <>

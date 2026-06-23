@@ -1,13 +1,12 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/data/auth";
 import type { DailyLog } from "@/types";
 
 /** ym = "YYYY-MM" 한 달치 착용 기록 */
 export async function getMonthLogs(ym: string): Promise<DailyLog[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return [];
 
   const [y, m] = ym.split("-").map(Number);
@@ -28,9 +27,7 @@ export async function getMonthLogs(ym: string): Promise<DailyLog[]> {
 /** 전체 착용 기록 (통계용) */
 export async function getAllLogs(): Promise<DailyLog[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return [];
 
   const { data } = await supabase
@@ -43,9 +40,7 @@ export async function getAllLogs(): Promise<DailyLog[]> {
 
 export async function getLog(date: string): Promise<DailyLog | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return null;
 
   const { data } = await supabase

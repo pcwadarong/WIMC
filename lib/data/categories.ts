@@ -1,14 +1,12 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/data/auth";
 import { DEFAULT_CATEGORIES } from "@/lib/constants/categories";
 import type { Category, CategoryNode } from "@/types";
 
 /** 유저의 카테고리 트리 반환. 없으면 기본 카테고리를 시드한다. */
 export async function getCategoryTree(): Promise<CategoryNode[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return [];
 
   let cats = await fetchCategories(user.id);

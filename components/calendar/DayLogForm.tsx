@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Check, ImagePlus, Loader2, LayoutGrid, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +10,8 @@ import { useToast } from "@/components/ui/Toast";
 import { compressImage } from "@/lib/utils/image";
 import { createClient } from "@/lib/supabase/client";
 import { upsertLog, deleteLog } from "@/app/(app)/calendar/actions";
-import { css } from "@/styled-system/css";
+import { fieldStyle } from "@/components/ui/styles";
+import { css, cx } from "@/styled-system/css";
 
 import type { OutfitThumb } from "@/lib/utils/item";
 // 타입은 lib/utils/item로 이동 — 기존 import 경로 호환 위해 재노출
@@ -32,6 +34,7 @@ export function DayLogForm({
   pickDate?: boolean;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { show } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -86,8 +89,9 @@ export function DayLogForm({
       return;
     }
     show("기록했어요.", "success");
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
+    queryClient.invalidateQueries({ queryKey: ["stats"] });
     router.push("/calendar");
-    router.refresh();
   };
 
   const remove = async () => {
@@ -100,8 +104,9 @@ export function DayLogForm({
       return;
     }
     show("삭제했어요.", "success");
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
+    queryClient.invalidateQueries({ queryKey: ["stats"] });
     router.push("/calendar");
-    router.refresh();
   };
 
   return (
@@ -115,16 +120,7 @@ export function DayLogForm({
             type="date"
             value={logDate}
             onChange={(e) => setLogDate(e.target.value)}
-            className={css({
-              width: "100%",
-              height: "48px",
-              paddingX: "3",
-              bg: "surface.muted",
-              borderRadius: "sm",
-              fontSize: "base",
-              color: "text.primary",
-              _focusVisible: { outline: "none" },
-            })}
+            className={cx(fieldStyle, css({ height: "48px", paddingX: "3" }))}
           />
         </div>
       )}
@@ -303,17 +299,7 @@ export function DayLogForm({
           onChange={(e) => setMemo(e.target.value)}
           rows={3}
           placeholder="오늘의 코디 메모"
-          className={css({
-            width: "100%",
-            padding: "4",
-            bg: "surface.muted",
-            borderRadius: "sm",
-            fontSize: "base",
-            color: "text.primary",
-            resize: "vertical",
-            _placeholder: { color: "text.tertiary" },
-            _focusVisible: { outline: "none" },
-          })}
+          className={cx(fieldStyle, css({ padding: "4", resize: "vertical" }))}
         />
       </div>
 

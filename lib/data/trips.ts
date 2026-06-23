@@ -1,12 +1,11 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/data/auth";
 import type { Trip, TripDay } from "@/types";
 
 export async function getTrips(): Promise<Trip[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return [];
 
   const { data } = await supabase
@@ -22,9 +21,7 @@ export async function getTrip(
   id: string,
 ): Promise<{ trip: Trip; days: TripDay[] } | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return null;
 
   const { data: trip } = await supabase

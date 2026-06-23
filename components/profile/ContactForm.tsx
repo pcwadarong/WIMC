@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Mail } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
-import { css } from "@/styled-system/css";
+import { submitInquiry } from "@/app/(app)/contact/actions";
+import { fieldStyle } from "@/components/ui/styles";
+import { css, cx } from "@/styled-system/css";
 
 const CONTACT_EMAIL = "pcwadarong@naver.com";
 
@@ -13,22 +15,29 @@ export function ContactForm() {
   const { show } = useToast();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const send = () => {
+  const send = async () => {
     if (!message.trim()) {
       show("문의 내용을 입력해주세요.", "error");
       return;
     }
-    const url = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-      `[WIMC 문의] ${subject.trim() || "문의"}`,
-    )}&body=${encodeURIComponent(message.trim())}`;
-    window.location.href = url;
+    setSending(true);
+    const result = await submitInquiry({ subject, message });
+    setSending(false);
+    if ("error" in result) {
+      show(result.error, "error");
+      return;
+    }
+    show("문의를 보냈어요. 확인 후 답변드릴게요.", "success");
+    setSubject("");
+    setMessage("");
   };
 
   return (
     <div className={css({ display: "flex", flexDirection: "column", gap: "4" })}>
       <p className={css({ fontSize: "sm", color: "text.secondary" })}>
-        의견이나 버그 제보를 보내주세요. 메일 앱으로 연결돼요.
+        의견이나 버그 제보를 보내주세요. 보내주신 내용은 운영자가 확인해요.
       </p>
 
       <Input
@@ -48,27 +57,23 @@ export function ContactForm() {
           onChange={(e) => setMessage(e.target.value)}
           rows={6}
           placeholder="문의 내용을 적어주세요."
-          className={css({
-            width: "100%",
-            padding: "4",
-            bg: "surface.muted",
-            borderRadius: "sm",
-            fontSize: "base",
-            color: "text.primary",
-            resize: "vertical",
-            _placeholder: { color: "text.tertiary" },
-            _focusVisible: { outline: "none" },
-          })}
+          className={cx(fieldStyle, css({ padding: "4", resize: "vertical" }))}
         />
       </div>
 
-      <Button type="button" fullWidth onClick={send}>
-        <Mail size={18} />
-        메일로 문의 보내기
+      <Button type="button" fullWidth onClick={send} disabled={sending}>
+        {sending ? (
+          <Loader2 size={18} className={css({ animation: "spin 1s linear infinite" })} />
+        ) : (
+          <>
+            <Send size={18} />
+            문의 보내기
+          </>
+        )}
       </Button>
 
       <p className={css({ fontSize: "xs", color: "text.tertiary", textAlign: "center" })}>
-        또는 직접 {CONTACT_EMAIL} 로 보내주세요.
+        급한 문의는 {CONTACT_EMAIL} 로 직접 보내주세요.
       </p>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,6 +12,7 @@ import { css } from "@/styled-system/css";
 
 export function TripForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { show } = useToast();
 
   const [name, setName] = useState("");
@@ -43,8 +45,8 @@ export function TripForm() {
       return;
     }
     show("여행을 만들었어요.", "success");
+    queryClient.invalidateQueries({ queryKey: ["trips"] });
     router.push(`/trips/${result.id}`);
-    router.refresh();
   };
 
   return (

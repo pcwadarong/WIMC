@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/Toast";
 import { setTripDay } from "@/app/(app)/trips/actions";
 import type { OutfitThumb } from "@/components/calendar/DayLogForm";
@@ -20,7 +20,7 @@ export function TripDayPlanner({
   initial: Record<string, string | null>;
   outfits: OutfitThumb[];
 }) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const { show } = useToast();
   const [assign, setAssign] = useState<Record<string, string | null>>(initial);
 
@@ -31,7 +31,7 @@ export function TripDayPlanner({
       show(result.error, "error");
       return;
     }
-    router.refresh();
+    queryClient.invalidateQueries({ queryKey: ["trips", "detail", tripId] });
   };
 
   const label = (d: string) => {

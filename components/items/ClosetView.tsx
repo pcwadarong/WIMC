@@ -4,12 +4,19 @@ import { useMemo, useState } from "react";
 import { Search, Heart, ShoppingBag, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { BottomSheet } from "@/components/ui/BottomSheet";
+import { GridSkeleton } from "@/components/ui/Skeleton";
 import { ItemCard } from "@/components/items/ItemCard";
-import { SEASON_LABELS, type Season, type Item } from "@/types";
-import type { CategoryMap } from "@/lib/recommend";
+import { SEASON_LABELS, type Season } from "@/types";
+import { useItems, useCategories } from "@/lib/queries/hooks";
+import { buildCategoryMap } from "@/lib/utils/category";
 import { sortItems, ITEM_SORT_LABELS, type ItemSort } from "@/lib/utils/item";
 import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
+
+const title = css({ textStyle: "displayMd", color: "text.primary", marginBottom: "4" });
+
+// 카테고리 탭 파스텔(레퍼런스 Courses 폴더). 동적 인덱스 색이라 style 예외.
+const CATEGORY_PASTELS = ["#F0D2B4", "#F1CEDA", "#D9CFEC", "#C5D8EC", "#CBE0BD", "#F2DE82"];
 
 const MATERIALS = ["면", "폴리에스터", "울", "아크릴", "나일론", "린넨", "데님", "가죽", "캐시미어"];
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
@@ -22,15 +29,12 @@ const sheetSectionTitle = css({
   marginBottom: "3",
 });
 
-export function ClosetView({
-  items,
-  categoryMap,
-  parents,
-}: {
-  items: Item[];
-  categoryMap: CategoryMap;
-  parents: string[];
-}) {
+export function ClosetView() {
+  const { data: items = [], isLoading: itemsLoading } = useItems();
+  const { data: categories = [], isLoading: catsLoading } = useCategories();
+  const categoryMap = useMemo(() => buildCategoryMap(categories), [categories]);
+  const parents = useMemo(() => categories.map((c) => c.name), [categories]);
+
   const [cat, setCat] = useState("");
   const [fav, setFav] = useState(false);
   const [wishlist, setWishlist] = useState(false);
@@ -83,10 +87,32 @@ export function ClosetView({
     setSeasons([]);
   };
 
+  if (itemsLoading || catsLoading) {
+    return (
+      <>
+        <h1 className={title}>Closet</h1>
+        <div className={css({ marginTop: "4" })}>
+          <GridSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <>
+        <h1 className={title}>Closet</h1>
+        <p className={css({ marginTop: "12", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
+          아직 등록한 아이템이 없어요. + 버튼으로 추가해보세요.
+        </p>
+      </>
+    );
+  }
+
   return (
     <>
-      <h1 className={css({ textStyle: "2xl", fontWeight: 700, color: "text.primary", marginBottom: "4" })}>
-        {wishlist ? "위시리스트" : "옷장"}
+      <h1 className={title}>
+        {wishlist ? "Wishlist" : "Closet"}
       </h1>
 
       {/* 검색 + 필터 */}
@@ -158,14 +184,38 @@ export function ClosetView({
           "&::-webkit-scrollbar": { display: "none" },
         })}
       >
-        <button type="button" className={chipClass({ active: !cat, variant: "fill", size: "sm" })} onClick={() => setCat("")}>
+        <button type="button" className={chipClass({ active: !cat, size: "sm" })} onClick={() => setCat("")}>
           전체
         </button>
-        {parents.map((p) => (
-          <button key={p} type="button" className={chipClass({ active: cat === p, variant: "fill", size: "sm" })} onClick={() => setCat(p)}>
-            {p}
-          </button>
-        ))}
+        {parents.map((p, i) => {
+          const on = cat === p;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setCat(p)}
+              aria-pressed={on}
+              className={css({
+                flexShrink: 0,
+                height: "34px",
+                paddingX: "3",
+                borderRadius: "full",
+                borderWidth: "1.5px",
+                borderStyle: "solid",
+                borderColor: on ? "brown.dark" : "border",
+                fontSize: "sm",
+                fontWeight: on ? 600 : 500,
+                color: "text.primary",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                transition: "border-color 0.12s ease",
+              })}
+              style={{ background: CATEGORY_PASTELS[i % CATEGORY_PASTELS.length] }}
+            >
+              {p}
+            </button>
+          );
+        })}
       </div>
 
       {/* 빠른 필터 + 정렬 */}
@@ -183,7 +233,7 @@ export function ClosetView({
             type="button"
             onClick={() => setFav((v) => !v)}
             aria-pressed={fav}
-            className={chipClass({ active: fav, variant: "fill", size: "sm" })}
+            className={chipClass({ active: fav, size: "sm" })}
           >
             <Heart size={14} fill={fav ? "currentColor" : "none"} />
             즐겨찾기
@@ -195,7 +245,7 @@ export function ClosetView({
               setFav(false);
             }}
             aria-pressed={wishlist}
-            className={chipClass({ active: wishlist, variant: "fill", size: "sm" })}
+            className={chipClass({ active: wishlist, size: "sm" })}
           >
             <ShoppingBag size={14} />
             위시리스트
