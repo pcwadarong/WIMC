@@ -77,7 +77,8 @@ export function OutfitsList() {
         className={css({
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "4",
+          gap: "5",
+          rowGap: "6",
         })}
       >
         {sorted.map((o) => (

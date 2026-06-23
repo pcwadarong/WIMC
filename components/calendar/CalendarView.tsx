@@ -94,13 +94,21 @@ export function CalendarView() {
             display: "inline-flex",
             alignItems: "center",
             gap: "1.5",
+            height: "36px",
+            paddingX: "3.5",
+            borderRadius: "full",
+            bg: "accent.blue",
+            borderWidth: "1.5px",
+            borderStyle: "solid",
+            borderColor: "brown.dark",
             fontSize: "sm",
-            fontWeight: 500,
-            color: "text.secondary",
-            _hover: { color: "text.primary" },
+            fontWeight: 600,
+            color: "text.primary",
+            transition: "transform 0.1s ease",
+            _active: { transform: "scale(0.97)" },
           })}
         >
-          <Plane size={16} />
+          <Plane size={15} />
           여행
         </Link>
       </div>
@@ -224,16 +232,37 @@ export function CalendarView() {
         <div
           className={css({
             display: "flex",
-            alignItems: "baseline",
+            alignItems: "center",
             justifyContent: "space-between",
+            gap: "2",
             marginBottom: "4",
           })}
         >
           <h2 className={css({ textStyle: "displaySm", color: "text.primary" })}>
             This Month
           </h2>
-          <Link href="/stats" className={css({ fontSize: "sm", color: "text.secondary" })}>
-            전체 분석 보기
+          <Link
+            href="/stats"
+            className={css({
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "1",
+              flexShrink: 0,
+              height: "30px",
+              paddingX: "3",
+              borderRadius: "full",
+              borderWidth: "1.5px",
+              borderStyle: "solid",
+              borderColor: "brown.dark",
+              bg: "surface",
+              fontSize: "xs",
+              fontWeight: 600,
+              color: "text.primary",
+              _hover: { bg: "surface.muted" },
+            })}
+          >
+            전체 분석
+            <ChevronRight size={13} />
           </Link>
         </div>
         <div className={css({ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2" })}>

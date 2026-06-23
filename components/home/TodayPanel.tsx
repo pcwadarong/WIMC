@@ -119,23 +119,28 @@ export function TodayPanel({
 
   return (
     <div className={card}>
-      {/* 날씨 */}
+      {/* 날씨 위젯 (파스텔) */}
       <div
         className={css({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: "2",
+          padding: "3.5",
+          borderRadius: "md",
+          bg: "accent.lavender",
+          borderWidth: "1.5px",
+          borderStyle: "solid",
+          borderColor: "brown.dark",
         })}
       >
-        <div
-          className={css({ display: "flex", alignItems: "center", gap: "2" })}
-        >
-          <Cloud size={20} className={css({ color: "brown.light" })} />
-          <span className={css({ fontSize: "base", color: "text.primary" })}>
+        <div className={css({ display: "flex", alignItems: "center", gap: "2" })}>
+          <Cloud size={22} className={css({ color: "brown.dark" })} />
+          <span className={css({ fontSize: "lg", fontWeight: 700, color: "text.primary" })}>
             {weather.condition} {weather.temp_now}°
           </span>
         </div>
-        <span className={css({ fontSize: "sm", color: "text.tertiary" })}>
+        <span className={css({ fontSize: "sm", color: "text.primary" })}>
           {weather.temp_min}° / {weather.temp_max}° · 강수 {weather.precipitation_prob}%
         </span>
       </div>
@@ -145,8 +150,7 @@ export function TodayPanel({
           <p
             className={css({
               marginTop: "4",
-              textStyle: "lg",
-              fontWeight: 700,
+              textStyle: "displaySm",
               color: "text.primary",
             })}
           >
@@ -203,15 +207,19 @@ export function TodayPanel({
               display: "inline-flex",
               alignItems: "center",
               gap: "2",
-              height: "40px",
+              height: "42px",
               paddingX: "4",
-              borderRadius: "full",
-              bg: "surface.muted",
-              color: "text.secondary",
+              borderRadius: "md",
+              bg: "accent.green",
+              borderWidth: "1.5px",
+              borderStyle: "solid",
+              borderColor: "brown.dark",
+              color: "text.primary",
               fontSize: "sm",
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: "pointer",
-              _hover: { color: "text.primary" },
+              transition: "transform 0.1s ease",
+              _active: { transform: "scale(0.98)" },
             })}
           >
             <Sparkles size={16} />

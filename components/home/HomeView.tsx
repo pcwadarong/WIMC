@@ -142,7 +142,7 @@ export function HomeView() {
             className={css({
               display: "grid",
               gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "3",
+              gap: "4",
             })}
           >
             {recentOutfits.map((o) => (
