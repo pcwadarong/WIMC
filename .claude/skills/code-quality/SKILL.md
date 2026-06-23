@@ -8,6 +8,7 @@ description: WIMC 코드를 컨벤션 기준으로 점검하고 개선하는 스
 변경된 코드가 컨벤션을 지키는지 점검하고, 위반은 `파일:라인`으로 보고한 뒤 고친다.
 
 > 규칙 기준: `AGENTS.md` "코드 컨벤션", "데이터 계층 패턴", "데이터 저장 정책"
+> 데이터 흐름·컴포넌트 구현 절차는 `data-flow`·`component` 스킬 참조.
 
 ## Step 1: 변경 파일 확인
 
@@ -21,6 +22,12 @@ git diff --name-only HEAD
 
 **구조·위치**
 - [ ] 읽기는 `lib/data/*`, 쓰기는 라우트의 `actions.ts`, 공용 UI는 `components/ui`, 순수 로직은 `lib/utils`에 있는가?
+
+**데이터 계층 (정적 껍데기 + TanStack Query)**
+- [ ] `page.tsx`에 `await getX()` 같은 데이터 패칭이 없는가(정적 껍데기)? 패칭은 `*View`/`*Screen`이 훅으로 하는가?
+- [ ] 읽기는 `app/api/*` 핸들러 + `lib/queries` 훅을 거치는가(클라이언트에서 `lib/data` 직접 import 금지)?
+- [ ] 쓰기 후 `router.refresh()` 대신 `queryClient.invalidateQueries`로 올바른 키를 무효화했는가?
+- [ ] `isLoading` 스켈레톤·빈 상태를 처리했는가?
 
 **중복**
 - [ ] 같은 패턴이 3회 이상/거의 동일하면 공통화했는가? (그 전엔 인라인 유지 — 이른 추상화 금지)

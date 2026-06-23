@@ -6,7 +6,7 @@ description: WIMC 프로젝트용 새 스킬을 만드는 메타 스킬. "스킬
 # Skill-Creator
 
 `.claude/skills/{name}/SKILL.md`를 일관된 형식으로 작성한다.
-WIMC 스택(Next.js App Router + Panda CSS + Supabase) 기준으로만 만든다. FSD·TanStack·MSW·Tailwind 같은 다른 스택 가정을 넣지 않는다.
+WIMC 스택(Next.js App Router + Panda CSS + Supabase + TanStack Query) 기준으로만 만든다. FSD·MSW·Tailwind·Redux 같은 다른 스택 가정을 넣지 않는다.
 
 ## 핵심 원칙
 
@@ -46,7 +46,7 @@ description: {한 줄 역할}. "{문구1}", "{문구2}", "{문구3}" 요청 시 
 
 ## Step 4: 일관성 점검
 
-기존 스킬(`code-quality`)과 형식이 어긋나지 않는지 확인한다.
+기존 스킬(`code-quality`, `data-flow`, `component`)과 형식이 어긋나지 않는지 확인한다. 절차 스킬은 컨벤션을 복제하지 말고 `AGENTS.md` 섹션을 참조하되, **실제 파일 템플릿·단계**는 자체 보유한다(`data-flow`의 읽기 5단계처럼).
 
 ## 자가 확인
 

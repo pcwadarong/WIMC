@@ -7,16 +7,18 @@
 - Next.js 15 (App Router) + React 19 + TypeScript
 - Panda CSS (빌드타임 CSS-in-JS, 디자인 토큰은 `panda.config.ts`)
 - Supabase (Auth / Postgres / Storage, RLS)
+- TanStack Query v5 (클라이언트 데이터 캐싱 — `components/providers/QueryProvider.tsx`)
 - 폰트: Pretendard (globals.css 에서 CDN 로드)
+- 배포: Vercel(서울 `icn1`), 패키지 매니저 pnpm
 
 ## 코드 컨벤션 (단일 출처 — 스킬은 이 섹션을 참조)
 
 ### 폴더 구조
 
-- `app/(app)/*` 앱 라우트(바텀네비 그룹), `app/(auth)/*` 인증 화면, `app/api/*` 라우트 핸들러.
-- 읽기 = `lib/data/*` (server-only). 쓰기 = 각 라우트의 `actions.ts` (server actions).
-- `components/ui/*` 공용 원자 컴포넌트, `components/{feature}/*` 기능별(items/outfits/calendar/trips/profile/home/layout/auth).
-- `lib/utils/*` 순수 유틸, `lib/constants/*` 상수, `lib/prompts/*` 프롬프트 텍스트, `types/index.ts` 전역 타입.
+- `app/(app)/*` 앱 라우트(바텀네비 그룹, **정적 껍데기 page.tsx**), `app/(auth)/*` 인증 화면, `app/api/*` 읽기용 라우트 핸들러(GET).
+- 읽기 = `lib/data/*` (server-only, 단일 출처) → `app/api/*`로 노출 → 클라이언트는 `lib/queries/*` 훅으로 소비. 쓰기 = 각 라우트의 `actions.ts` (server actions).
+- `components/ui/*` 공용 원자(Button/Input/Toast/Skeleton/BottomSheet 등), `components/{feature}/*` 기능별(items/outfits/calendar/trips/profile/home/stats/layout/auth/providers). 데이터를 훅으로 가져오는 컨테이너는 `*View`/`*Screen` 네이밍.
+- `lib/utils/*` 순수 유틸, `lib/queries/*` 쿼리 훅·키, `lib/constants/*` 상수, `lib/prompts/*` 프롬프트 텍스트, `types/index.ts` 전역 타입.
 - 새 공통 로직은 `lib/utils`, 새 공용 UI는 `components/ui`에 둔다.
 
 ### 중복 / 추출 기준
@@ -61,13 +63,16 @@
 
 ## 진행 상황
 
-- ✅ Phase 1: 프로젝트 세팅, 디자인 토큰, 바텀 네비/레이아웃, 타입, 스키마, 미들웨어
-- ✅ Auth: 로그인/회원가입(클라이언트 `AuthForm`, 토글) · 비밀번호 재설정/변경(`/account/update-password`) · 이메일 확인(`/auth/confirm`) · 로그아웃 · 미들웨어 게이팅
-- ✅ 토스트: `components/ui/Toast.tsx`(`ToastProvider` 루트 적용, `useToast().show(msg, kind)`) — 에러/성공은 인라인 대신 토스트로
-- ✅ Phase 2: 아이템 등록(`/closet/new`, 압축+스토리지 업로드) · 옷장 목록(`/closet`, 탭/필터/검색/FAB) · 아이템 상세(`/closet/[id]`, 즐겨찾기/삭제)
-- ✅ 날씨+추천(규칙기반): `/api/weather`(Open-Meteo, 무료) + `lib/recommend.ts`(순수함수) + 홈 `TodayPanel`. 프롬프트 복사(B안)도 포함.
-- ✅ 환영 페이지(`/welcome`): 이메일 확인 후 `/auth/confirm`가 여기로 보냄(바로 로그인으로 안 감).
-- ⬜ Phase 3~5: 코디 빌더/캘린더/통계/여행/프로필 (+ AI 고도화)
+- ✅ 기반: 프로젝트 세팅, 디자인 토큰, 바텀 네비/레이아웃, 타입, 스키마, 미들웨어, 토스트(`ToastProvider`/`useToast`)
+- ✅ Auth: 로그인/회원가입(`AuthForm`) · 비밀번호 재설정/변경(`/account/update-password`) · 이메일 확인(`/auth/confirm`)·환영(`/welcome`) · 로그아웃 · 미들웨어 게이팅
+- ✅ 옷장: 등록(`/closet/new`, 압축+스토리지) · 목록(탭/필터/검색/정렬/FAB) · 상세(즐겨찾기/삭제) · 위시리스트(구매고민 필터)
+- ✅ 코디: 빌더(`OutfitBuilder`, 생성/수정) · 목록 · 상세 · 삭제
+- ✅ 캘린더: 월 그리드(이미지 뷰어) · 일별 기록(`DayLogForm`, 사진/코디/메모) · 이번 달 요약 · 여행(`/trips`)
+- ✅ 통계(`/stats`): 지출·카테고리·색상·브랜드·착용당비용·미착용 등
+- ✅ 프로필(`/profile`): 나의 스타일(키워드/분석 붙여넣기) · 위치 · 프로필 사진 · 설정/문의(`inquiries` 테이블)
+- ✅ 날씨+추천(규칙기반): `/api/weather`(Open-Meteo) + `lib/recommend.ts` + 홈 `TodayPanel` + 프롬프트 복사
+- ✅ **데이터 계층 전환**: 정적 껍데기 + TanStack Query(아래 "데이터 계층 패턴"). 주요 탭 ○ Static 프리렌더.
+- ⬜ 다음: PWA(나중), 감성 테마 시스템(Later), AI 인앱 자동화(유료 API 필요 시)
 
 ## AI 추천 전략 (중요)
 
@@ -83,12 +88,17 @@
   - 추천용 위치: GPS는 1회성(저장 안 함). 추후 마이페이지에서 고른 도시를 **프로필(서버)** 에 저장해 사용.
 - **민감정보(키·DB주소 등)는 클라이언트 코드/AI 프롬프트에 절대 포함하지 않는다.** (프롬프트의 "내 옷장 목록"은 옷 메타데이터 텍스트일 뿐)
 
-## 데이터 계층 패턴
+## 데이터 계층 패턴 (정적 껍데기 + TanStack Query)
 
-- 읽기: `lib/data/*`(server-only) — `getItems` / `getItem` / `getCategoryTree`(없으면 기본 카테고리 시드).
-- 쓰기: 페이지별 `actions.ts` server actions — `app/(app)/closet/actions.ts`(createItem/toggleFavorite/deleteItem).
+- **렌더 구조**: `app/(app)/*/page.tsx`는 **데이터 fetch 없는 정적 Server Component 껍데기**(제목/레이아웃/FAB만). 유저 데이터는 클라이언트 컴포넌트(예: `ClosetView`, `OutfitsList`, `CalendarView`, `HomeView`, `*Screen`)가 **TanStack Query 훅**으로 가져온다. → 주요 탭이 ○ Static 프리렌더되어 라우팅 즉시, 데이터는 캐시/스켈레톤으로 채움.
+- **읽기**: `lib/data/*`(server-only)는 그대로 단일 출처. 이를 **route handler `app/api/*`**(GET, `getItems`/`getOutfit`/`getMonthLogs`/`getStats` 등 호출, `force-dynamic`)로 노출 → 클라이언트는 `lib/queries/hooks.ts`의 `useItems`/`useOutfits`/… (`useQuery`)로 소비. queryKey는 `lib/queries/keys.ts`(`qk`) 중앙 관리. 카테고리 시드·통계 집계는 서버(handler)에서 처리.
+- **쓰기**: 페이지별 `actions.ts` server actions 유지(`createItem` 등). 클라이언트 폼/버튼은 성공 후 `router.refresh()` 대신 **`queryClient.invalidateQueries({ queryKey: ["items"] })`** 로 캐시 무효화(prefix 매칭). 무효화 키: items/outfits/logs/profile/trips/stats. (`invalidateQueries(["items"])`는 list·detail·summary 모두 무효화.)
+- **로딩**: 훅 `isLoading` → 데이터 영역에 `components/ui/Skeleton`(`Skeleton`/`GridSkeleton`, `pulse` 키프레임). 라우트 `loading.tsx`는 두지 않는다(껍데기가 즉시).
+- **편집 폼**: `ItemForm`/`OutfitBuilder`처럼 초기값을 useState 초기화에 쓰는 폼은 비동기 데이터를 직접 받지 말고 **`*Screen` 컨테이너가 데이터 준비 후 prop으로** 넘긴다(준비 전엔 스켈레톤).
+- **날짜 기본값**: 정적 프리렌더에서 `new Date()` 빌드 고정을 피하려면 **클라이언트에서 계산**(예: `DayLogScreen`의 오늘 날짜 `useState` 초기화).
 - 이미지 업로드: 클라이언트에서 압축(`lib/utils/image.ts`) 후 브라우저 Supabase로 `items/{user_id}/{uuid}.webp` 업로드 → public URL을 `items.images`(jsonb)에 저장.
 - Storage: **public 버킷 5개**(items/outfits/logs/trips/avatars) + `supabase/storage-policies.sql`(본인 폴더만 쓰기, 읽기 공개).
+- **인증 검증**: 읽기 경로는 `lib/data/auth.ts:getCurrentUser`(React `cache` + `getClaims` 로컬 검증). 쓰기 action은 `auth.getUser()`(서버 검증) 사용.
 
 ## Auth 메모
 

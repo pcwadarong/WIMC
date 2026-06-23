@@ -38,6 +38,7 @@ yarn-error.log*
 .claude/settings.local.json
 .agents/
 skills-lock.json
+docs/
 
 # vercel
 .vercel

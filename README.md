@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WIMC — What's In My Closet 👗
 
-## Getting Started
+> **"오늘 뭐 입지?"** 를 매일 고민하는 사람을 위한 개인 옷장 비서.
+> 내 옷을 디지털로 모으고, 코디를 기록하고, 날씨와 내 스타일에 맞는 추천까지 — 모바일에서.
 
-First, run the development server:
+WIMC는 옷장 속 옷들을 한눈에 관리하고, 매일의 착장을 캘린더로 남기며, **AI에게 내 스타일을 분석시켜** 더 나은 코디를 찾도록 돕는 모바일 퍼스트 웹앱입니다.
+
+---
+
+## ✨ 무엇을 할 수 있나요
+
+- **👕 내 옷장 디지털화** — 사진 한 장으로 아이템 등록(자동 압축). 카테고리·색상·소재·시즌·브랜드·가격, 그리고 *구매고민 / 배송중 / 보유중 / 판매함* 상태까지 관리.
+- **🧩 코디 조합·기록** — 옷장에서 옷을 골라 코디를 만들고 저장. 즐겨찾기로 자주 입는 조합을 빠르게.
+- **📅 착장 캘린더** — 하루의 코디를 사진으로 남기는 "이미지 다이어리". 달력을 넘기며 지난 착장을 한눈에.
+- **✈️ 여행 플래너** — 여행 일정을 만들고 일차별로 입을 코디를 미리 배치.
+- **📊 옷장 분석** — 총 지출·월별 지출 추이·카테고리/색상 분포·**착용당 비용(가성비)**·잠자는 옷·오래 안 입은 옷까지, 소비와 활용을 데이터로.
+- **🌤 날씨 기반 추천** — 현재 위치(또는 선택한 도시)의 날씨에 맞춰 무엇을 입을지 규칙 기반으로 제안.
+- **🤖 내 스타일 AI 분석** — 구독 중인 ChatGPT·Claude에 **그대로 붙여넣을 프롬프트**를 제공. 대화로 받은 스타일 분석을 저장해 추천 품질을 높입니다.
+
+## 💡 AI를 똑똑하게, 비용은 0원
+
+별도의 LLM API 키나 종량 과금 없이 동작합니다.
+
+- **추천**은 무료 규칙 기반 엔진으로 즉시 제공하고,
+- **깊은 스타일 분석**은 "프롬프트 복사 → 내가 쓰는 AI에 붙여넣기 → 결과 저장" 흐름으로 처리합니다.
+
+덕분에 운영 비용 없이 AI의 이점을 누리고, 추천 엔진은 추후 무료 티어 LLM으로 그대로 교체할 수 있게 설계되어 있습니다.
+
+## 🔒 데이터는 안전하게
+
+옷·코디·기록 등 영구 데이터는 모두 서버(Supabase)에 저장되며, **행 수준 보안(RLS)** 으로 본인 데이터만 접근합니다. 민감 정보는 클라이언트 코드나 AI 프롬프트에 절대 포함하지 않습니다.
+
+---
+
+## 🛠 기술 스택
+
+| 영역 | 사용 기술 |
+| --- | --- |
+| 프레임워크 | Next.js 15 (App Router) · React 19 · TypeScript |
+| 스타일 | Panda CSS (빌드타임 CSS-in-JS, 디자인 토큰) |
+| 백엔드 | Supabase (Auth · Postgres · Storage · RLS) |
+| 데이터 | TanStack Query v5 (정적 껍데기 + 클라이언트 캐싱) |
+| 배포 | Vercel · pnpm |
+
+**아키텍처 한 줄 요약**: 페이지는 데이터 없는 **정적 껍데기**로 즉시 렌더되고, 유저 데이터는 TanStack Query가 클라이언트에서 캐싱하며 채웁니다. → 탭 전환이 즉각적이고, 재방문은 캐시로 매끄럽습니다.
+
+## 🚀 시작하기
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local`에 Supabase 환경변수를 채우면 인증·데이터가 활성화됩니다(미설정 시 미들웨어가 게이팅을 건너뜀 — 초기 개발용).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+DB 스키마는 `supabase/schema.sql`(+ `migration-*.sql`)을 Supabase SQL Editor에 실행해 준비합니다.
 
-## Learn More
+| 명령 | 설명 |
+| --- | --- |
+| `pnpm dev` | 개발 서버 |
+| `pnpm build` | 프로덕션 빌드 (Panda codegen 자동) |
+| `pnpm lint` | ESLint |
+| `npx panda codegen` | 디자인 토큰 변경 후 `styled-system/` 재생성 |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📐 더 알아보기
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 코드베이스 구조·컨벤션·중요 규칙: [`AGENTS.md`](./AGENTS.md)
+- 반복 작업 절차(데이터 흐름·컴포넌트 구현): [`.claude/skills/`](./.claude/skills/)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> 개인/소수 사용자를 위해 만든 앱입니다. 모바일(최대 너비 430px)에 최적화되어 있어요.
