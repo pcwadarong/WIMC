@@ -15,9 +15,6 @@ import { css } from "@/styled-system/css";
 
 const title = css({ textStyle: "displayMd", color: "text.primary", marginBottom: "4" });
 
-// 카테고리 탭 파스텔(레퍼런스 Courses 폴더). 동적 인덱스 색이라 style 예외.
-const CATEGORY_PASTELS = ["#F0D2B4", "#F1CEDA", "#D9CFEC", "#C5D8EC", "#CBE0BD", "#F2DE82"];
-
 const MATERIALS = ["면", "폴리에스터", "울", "아크릴", "나일론", "린넨", "데님", "가죽", "캐시미어"];
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
 const SORTS = Object.keys(ITEM_SORT_LABELS) as ItemSort[];
@@ -123,10 +120,14 @@ export function ClosetView() {
             alignItems: "center",
             gap: "2",
             flex: 1,
+            minWidth: 0,
             height: "44px",
             paddingX: "3",
-            bg: "surface.muted",
-            borderRadius: "sm",
+            bg: "surface",
+            borderRadius: "md",
+            borderWidth: "1.5px",
+            borderStyle: "solid",
+            borderColor: "brown.dark",
           })}
         >
           <Search size={18} className={css({ color: "text.tertiary" })} />
@@ -158,14 +159,18 @@ export function ClosetView() {
             display: "inline-flex",
             alignItems: "center",
             gap: "1.5",
+            flexShrink: 0,
             height: "44px",
             paddingX: "4",
-            borderRadius: "sm",
+            borderRadius: "md",
+            borderWidth: "1.5px",
+            borderStyle: "solid",
+            borderColor: "brown.dark",
             fontSize: "sm",
             fontWeight: 600,
             cursor: "pointer",
-            bg: activeCount > 0 ? "brown.dark" : "surface.muted",
-            color: activeCount > 0 ? "white" : "text.secondary",
+            bg: activeCount > 0 ? "accent.green" : "surface",
+            color: "text.primary",
           })}
         >
           <SlidersHorizontal size={16} />
@@ -187,35 +192,17 @@ export function ClosetView() {
         <button type="button" className={chipClass({ active: !cat, size: "sm" })} onClick={() => setCat("")}>
           전체
         </button>
-        {parents.map((p, i) => {
-          const on = cat === p;
-          return (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setCat(p)}
-              aria-pressed={on}
-              className={css({
-                flexShrink: 0,
-                height: "34px",
-                paddingX: "3",
-                borderRadius: "full",
-                borderWidth: "1.5px",
-                borderStyle: "solid",
-                borderColor: on ? "brown.dark" : "border",
-                fontSize: "sm",
-                fontWeight: on ? 600 : 500,
-                color: "text.primary",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                transition: "border-color 0.12s ease",
-              })}
-              style={{ background: CATEGORY_PASTELS[i % CATEGORY_PASTELS.length] }}
-            >
-              {p}
-            </button>
-          );
-        })}
+        {parents.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setCat(p)}
+            aria-pressed={cat === p}
+            className={chipClass({ active: cat === p, size: "sm" })}
+          >
+            {p}
+          </button>
+        ))}
       </div>
 
       {/* 빠른 필터 + 정렬 */}
@@ -233,7 +220,7 @@ export function ClosetView() {
             type="button"
             onClick={() => setFav((v) => !v)}
             aria-pressed={fav}
-            className={chipClass({ active: fav, size: "sm" })}
+            className={chipClass({ active: fav, size: "sm", color: "pink" })}
           >
             <Heart size={14} fill={fav ? "currentColor" : "none"} />
             즐겨찾기
@@ -245,7 +232,7 @@ export function ClosetView() {
               setFav(false);
             }}
             aria-pressed={wishlist}
-            className={chipClass({ active: wishlist, size: "sm" })}
+            className={chipClass({ active: wishlist, size: "sm", color: "purple" })}
           >
             <ShoppingBag size={14} />
             위시리스트

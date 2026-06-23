@@ -22,7 +22,7 @@ export function TopBar({ title, back, action }: TopBarProps) {
         top: 0,
         zIndex: 40,
         display: "grid",
-        gridTemplateColumns: "44px 1fr 44px",
+        gridTemplateColumns: "44px 1fr auto",
         alignItems: "center",
         height: "52px",
         paddingX: "2",
@@ -68,7 +68,9 @@ export function TopBar({ title, back, action }: TopBarProps) {
         className={css({
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-end",
+          gap: "0.5",
+          minWidth: "44px",
         })}
       >
         {action}

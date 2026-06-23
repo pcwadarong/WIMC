@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { deleteItem } from "@/app/(app)/closet/actions";
+import { css } from "@/styled-system/css";
 
 export function DeleteItemButton({ id }: { id: string }) {
   const router = useRouter();
@@ -30,15 +30,23 @@ export function DeleteItemButton({ id }: { id: string }) {
   };
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      fullWidth
       onClick={onDelete}
       disabled={pending}
+      aria-label="삭제"
+      className={css({
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "44px",
+        height: "44px",
+        color: "error",
+        cursor: "pointer",
+        _disabled: { opacity: 0.5, cursor: "not-allowed" },
+      })}
     >
-      <Trash2 size={18} />
-      {pending ? "삭제 중…" : "삭제"}
-    </Button>
+      <Trash2 size={20} />
+    </button>
   );
 }

@@ -6,6 +6,7 @@ import { ItemCard } from "@/components/items/ItemCard";
 import { DeleteOutfitButton } from "@/components/outfits/DeleteOutfitButton";
 import { TopBar } from "@/components/layout/TopBar";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { iconAction } from "@/components/ui/styles";
 import { useOutfit, useItems } from "@/lib/queries/hooks";
 import { indexById } from "@/lib/utils/item";
 import type { Item } from "@/types";
@@ -45,20 +46,28 @@ export function OutfitDetailScreen({ id }: { id: string }) {
 
   return (
     <>
-      <TopBar back title={outfit.name || "코디"} />
-      <div className={css({ paddingX: "5", paddingBottom: "10" })}>
-        <h1 className={css({ textStyle: "displayMd", color: "text.primary", marginTop: "4" })}>
-          {outfit.name || "이름 없는 코디"}
-        </h1>
+      <TopBar
+        back
+        title={outfit.name || "코디"}
+        action={
+          <>
+            <Link href={`/outfits/${outfit.id}/edit`} aria-label="수정" className={iconAction}>
+              <Pencil size={19} />
+            </Link>
+            <DeleteOutfitButton id={outfit.id} />
+          </>
+        }
+      />
+      <div className={css({ paddingX: "5", paddingBottom: "10", paddingTop: "2" })}>
         {outfit.memo && (
-          <p className={css({ marginTop: "2", fontSize: "sm", color: "text.secondary" })}>
+          <p className={css({ fontSize: "sm", color: "text.secondary" })}>
             {outfit.memo}
           </p>
         )}
 
         <div
           className={css({
-            marginTop: "6",
+            marginTop: outfit.memo ? "5" : "1",
             display: "grid",
             gridTemplateColumns: "repeat(2, 1fr)",
             gap: "4",
@@ -67,36 +76,6 @@ export function OutfitDetailScreen({ id }: { id: string }) {
           {outfitItems.map((item) => (
             <ItemCard key={item.id} item={item} />
           ))}
-        </div>
-
-        <div
-          className={css({
-            marginTop: "8",
-            display: "flex",
-            flexDirection: "column",
-            gap: "3",
-          })}
-        >
-          <Link
-            href={`/outfits/${outfit.id}/edit`}
-            className={css({
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "2",
-              height: "52px",
-              borderRadius: "full",
-              bg: "surface.muted",
-              color: "text.primary",
-              fontSize: "base",
-              fontWeight: 600,
-              _hover: { bg: "border" },
-            })}
-          >
-            <Pencil size={18} />
-            수정
-          </Link>
-          <DeleteOutfitButton id={outfit.id} />
         </div>
       </div>
     </>

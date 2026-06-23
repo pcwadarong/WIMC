@@ -31,8 +31,7 @@ const SEASONS = Object.keys(SEASON_LABELS) as Season[];
 const STATUSES = Object.keys(ITEM_STATUS_LABELS) as ItemStatus[];
 
 const sectionTitle = css({
-  textStyle: "lg",
-  fontWeight: 700,
+  textStyle: "displaySm",
   color: "text.primary",
   marginBottom: "4",
 });
@@ -204,11 +203,11 @@ export function ItemForm({
 
   return (
     <form onSubmit={handleSubmit} className={css({ paddingBottom: "6" })}>
-      <Section title="사진">
+      <Section title="Photos">
         <ImageUpload value={images} onChange={setImages} />
       </Section>
 
-      <Section title="기본 정보">
+      <Section title="Basic">
         <Input
           id="name"
           label="이름 *"
@@ -312,26 +311,16 @@ export function ItemForm({
             onChange={(e) => setMemo(e.target.value)}
             rows={3}
             placeholder="자유 메모"
-            className={css({
-              width: "100%",
-              padding: "4",
-              bg: "surface.muted",
-              borderRadius: "sm",
-              fontSize: "base",
-              color: "text.primary",
-              resize: "vertical",
-              _placeholder: { color: "text.tertiary" },
-              _focusVisible: { outline: "none" },
-            })}
+            className={cx(fieldStyle, css({ padding: "4", resize: "vertical" }))}
           />
         </div>
       </Section>
 
-      <Section title="사이즈">
+      <Section title="Size">
         <SizeInput value={sizeInfo} onChange={setSizeInfo} category={parentName} />
       </Section>
 
-      <Section title="구매 정보">
+      <Section title="Purchase">
         <Input
           id="brand"
           label="브랜드"

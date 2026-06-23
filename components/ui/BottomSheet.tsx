@@ -71,7 +71,7 @@ export function BottomSheet({
             borderBottomColor: "border",
           })}
         >
-          <h2 className={css({ textStyle: "lg", fontWeight: 700, color: "text.primary" })}>
+          <h2 className={css({ textStyle: "displaySm", color: "text.primary" })}>
             {title}
           </h2>
           <button

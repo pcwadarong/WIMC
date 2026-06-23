@@ -168,8 +168,7 @@ export function ItemDetail({
       <div className={css({ marginTop: "5" })}>
         <h1
           className={css({
-            textStyle: "2xl",
-            fontWeight: 700,
+            textStyle: "displayMd",
             color: "text.primary",
           })}
         >

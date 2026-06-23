@@ -8,6 +8,7 @@ import { FavoriteToggle } from "@/components/items/FavoriteToggle";
 import { DeleteItemButton } from "@/components/items/DeleteItemButton";
 import { TopBar } from "@/components/layout/TopBar";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { iconAction } from "@/components/ui/styles";
 import type { CategoryNode } from "@/types";
 import { css } from "@/styled-system/css";
 
@@ -56,38 +57,19 @@ export function ItemDetailScreen({ id }: { id: string }) {
 
   return (
     <>
-      <TopBar back action={<FavoriteToggle id={item.id} initial={item.is_favorite} />} />
+      <TopBar
+        back
+        action={
+          <>
+            <FavoriteToggle id={item.id} initial={item.is_favorite} />
+            <Link href={`/closet/${item.id}/edit`} aria-label="수정" className={iconAction}>
+              <Pencil size={19} />
+            </Link>
+            <DeleteItemButton id={item.id} />
+          </>
+        }
+      />
       <ItemDetail item={item} categoryLabel={categoryLabel} />
-      <div
-        className={css({
-          paddingX: "5",
-          paddingBottom: "10",
-          display: "flex",
-          flexDirection: "column",
-          gap: "3",
-        })}
-      >
-        <Link
-          href={`/closet/${item.id}/edit`}
-          className={css({
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "2",
-            height: "52px",
-            borderRadius: "full",
-            bg: "surface.muted",
-            color: "text.primary",
-            fontSize: "base",
-            fontWeight: 600,
-            _hover: { bg: "border" },
-          })}
-        >
-          <Pencil size={18} />
-          수정
-        </Link>
-        <DeleteItemButton id={item.id} />
-      </div>
     </>
   );
 }

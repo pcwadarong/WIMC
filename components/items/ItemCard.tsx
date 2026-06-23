@@ -21,9 +21,10 @@ export function ItemCard({ item }: { item: Item }) {
         className={css({
           position: "relative",
           aspectRatio: "1",
-          borderRadius: "md",
+          borderRadius: "lg",
           overflow: "hidden",
           bg: "surface.muted",
+          boxShadow: "card", // 잉크 아웃라인
         })}
       >
         {url ? (

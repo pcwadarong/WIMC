@@ -25,9 +25,10 @@ export function OutfitCard({
       <div
         className={css({
           aspectRatio: "1",
-          borderRadius: "md",
+          borderRadius: "lg",
           overflow: "hidden",
           bg: "surface.muted",
+          boxShadow: "card", // 잉크 아웃라인
           display: "grid",
           gridTemplateColumns: cells.length > 1 ? "1fr 1fr" : "1fr",
           gridAutoRows: "1fr",

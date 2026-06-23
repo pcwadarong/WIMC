@@ -79,8 +79,8 @@ export function TripDetailScreen({ id }: { id: string }) {
           </p>
         )}
 
-        <h2 className={css({ textStyle: "lg", fontWeight: 700, color: "text.primary", marginTop: "8", marginBottom: "4" })}>
-          일차별 코디
+        <h2 className={css({ textStyle: "displaySm", color: "text.primary", marginTop: "8", marginBottom: "4" })}>
+          Daily Outfits
         </h2>
         {dates.length === 0 ? (
           <p className={css({ fontSize: "sm", color: "text.tertiary" })}>

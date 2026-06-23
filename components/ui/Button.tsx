@@ -19,7 +19,7 @@ const base = css({
   fontFamily: "sans",
   fontWeight: 600,
   letterSpacing: "-0.02em",
-  borderRadius: "xs", // 거의 각진(최소)
+  borderRadius: "md", // 둥근
   cursor: "pointer",
   transition: "background 0.15s ease, opacity 0.15s ease, transform 0.1s ease",
   whiteSpace: "nowrap",

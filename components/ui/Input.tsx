@@ -10,10 +10,10 @@ const field = css({
   height: "52px",
   paddingX: "4",
   bg: "surface",
-  borderRadius: "xs", // 거의 각진(최소)
-  borderWidth: "1px",
+  borderRadius: "md", // 둥근
+  borderWidth: "1.5px",
   borderStyle: "solid",
-  borderColor: "border", // 기본 = 다크 그레이(또렷)
+  borderColor: "brown.dark", // 잉크 보더(또렷)
   fontFamily: "sans",
   fontSize: "base",
   letterSpacing: "-0.025em",

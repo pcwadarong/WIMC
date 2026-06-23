@@ -7,14 +7,25 @@ export const cardSurface = css({
   boxShadow: "outline", // 에디토리얼: 또렷한 잉크 아웃라인
 });
 
-/** 입력/셀렉트/텍스트영역 공통 필드 (각진·다크그레이 보더·블랙 포커스). 높이/패딩은 호출부에서. */
+/** TopBar 우측 아이콘 액션(44px 터치) */
+export const iconAction = css({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "44px",
+  height: "44px",
+  color: "text.primary",
+  cursor: "pointer",
+});
+
+/** 입력/셀렉트/텍스트영역 공통 필드 (잉크 보더·둥근·블랙 포커스). 높이/패딩은 호출부에서. */
 export const fieldStyle = css({
   width: "100%",
   bg: "surface",
-  borderRadius: "xs",
-  borderWidth: "1px",
+  borderRadius: "md",
+  borderWidth: "1.5px",
   borderStyle: "solid",
-  borderColor: "border",
+  borderColor: "brown.dark",
   fontFamily: "sans",
   fontSize: "base",
   color: "text.primary",
@@ -28,12 +39,17 @@ export const fieldStyle = css({
 });
 
 type ChipSize = "sm" | "md";
+type ChipColor = "green" | "pink" | "purple" | "yellow";
 
-/** 토글 칩 공통 클래스. 활성 = 파스텔(옐로) + 잉크 아웃라인. */
+/**
+ * 토글 칩 공통 클래스. 활성 = 파스텔 채움 + 잉크 아웃라인.
+ * color로 활성 색 지정(기본 green). 단일 css() 리터럴 삼항(Panda 정적 추출).
+ */
 export function chipClass({
   active = false,
   size = "md",
-}: { active?: boolean; size?: ChipSize } = {}) {
+  color = "green",
+}: { active?: boolean; size?: ChipSize; color?: ChipColor } = {}) {
   return css({
     display: "inline-flex",
     alignItems: "center",
@@ -51,8 +67,15 @@ export function chipClass({
     paddingX: size === "sm" ? "3" : "4",
     fontSize: "sm",
     fontWeight: active ? 600 : 500,
-    // 드로잉 느낌: 활성은 파스텔(옐로) 채움 + 잉크 아웃라인(레퍼런스 the edit)
-    bg: active ? "accent.yellow" : "surface.muted",
+    bg: active
+      ? color === "pink"
+        ? "accent.pink"
+        : color === "purple"
+          ? "accent.lavender"
+          : color === "yellow"
+            ? "accent.yellow"
+            : "accent.green"
+      : "surface.muted",
     color: active ? "text.primary" : "text.secondary",
     borderColor: active ? "brown.dark" : "border",
   });

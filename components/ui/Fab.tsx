@@ -11,7 +11,7 @@ export function Fab({ href, label }: { href: string; label: string }) {
       className={css({
         position: "fixed",
         right: "max(20px, calc(50vw - 215px + 20px))",
-        bottom: "calc(var(--bottom-nav-height) + 16px)",
+        bottom: "calc(env(safe-area-inset-bottom) + 90px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

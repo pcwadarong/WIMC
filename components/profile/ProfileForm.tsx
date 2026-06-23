@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Loader2,
   Sparkles,
-  LogOut,
   Pencil,
   ChevronRight,
   Mail,
@@ -21,7 +20,6 @@ import { cardSurface, fieldStyle } from "@/components/ui/styles";
 import { useToast } from "@/components/ui/Toast";
 import { ProfilePhotos } from "@/components/profile/ProfilePhotos";
 import { updateProfile } from "@/app/(app)/profile/actions";
-import { signOut } from "@/app/(app)/actions";
 import { buildStyleAnalysisPrompt } from "@/lib/profile-note";
 import { CITY_GROUPS, cityLabel, findCity } from "@/lib/constants/cities";
 import type { Profile, ProfilePhotos as Photos, UserLocation } from "@/types";
@@ -57,6 +55,7 @@ const STYLE_KEYWORDS = [
 
 const card = cx(cardSurface, css({ padding: "5" }));
 
+// 각 행 = 독립된 잉크 아웃라인 카드
 const menuRow = (danger = false) =>
   css({
     display: "flex",
@@ -65,15 +64,30 @@ const menuRow = (danger = false) =>
     width: "100%",
     padding: "4",
     bg: "surface",
+    borderRadius: "md",
+    boxShadow: "card",
     fontSize: "base",
+    fontWeight: 500,
     cursor: "pointer",
     textAlign: "left",
     color: danger ? "error" : "text.primary",
-    "&:not(:last-child)": {
-      borderBottomWidth: "1px",
-      borderBottomStyle: "solid",
-      borderBottomColor: "border",
-    },
+    transition: "background 0.12s ease",
+    _hover: { bg: "surface.muted" },
+  });
+
+// 컬러 아이콘 배지 (bg는 호출부에서 accent.* 지정)
+const badge = css({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "34px",
+  height: "34px",
+  borderRadius: "sm",
+  borderWidth: "1.5px",
+  borderStyle: "solid",
+  borderColor: "brown.dark",
+  color: "brown.dark",
+  flexShrink: 0,
 });
 
 export function ProfileForm({ initial }: { initial: Profile | null }) {
@@ -153,8 +167,8 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
             marginBottom: "4",
           })}
         >
-          <h2 className={css({ textStyle: "lg", fontWeight: 700, color: "text.primary" })}>
-            나의 스타일
+          <h2 className={css({ textStyle: "displaySm", color: "text.primary" })}>
+            My Style
           </h2>
           {!editing && (
             <button
@@ -330,9 +344,13 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
                       display: "inline-flex",
                       alignItems: "center",
                       borderRadius: "full",
-                      bg: "surface.muted",
+                      bg: "surface",
+                      borderWidth: "1.5px",
+                      borderStyle: "solid",
+                      borderColor: "brown.dark",
                       fontSize: "sm",
-                      color: "text.secondary",
+                      fontWeight: 500,
+                      color: "text.primary",
                     })}
                   >
                     {k}
@@ -376,30 +394,21 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
       </section>
 
       {/* 메뉴 */}
-      <div
-        className={css({
-          bg: "surface",
-          borderRadius: "md",
-          boxShadow: "card",
-          overflow: "hidden",
-        })}
-      >
+      <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
         <Link href="/contact" className={menuRow()}>
-          <Mail size={18} className={css({ color: "text.secondary" })} />
+          <span className={cx(badge, css({ bg: "accent.green" }))}>
+            <Mail size={17} />
+          </span>
           <span className={css({ flex: 1 })}>문의</span>
           <ChevronRight size={18} className={css({ color: "text.tertiary" })} />
         </Link>
         <Link href="/settings" className={menuRow()}>
-          <Settings size={18} className={css({ color: "text.secondary" })} />
+          <span className={cx(badge, css({ bg: "accent.blue" }))}>
+            <Settings size={17} />
+          </span>
           <span className={css({ flex: 1 })}>설정</span>
           <ChevronRight size={18} className={css({ color: "text.tertiary" })} />
         </Link>
-        <form action={signOut}>
-          <button type="submit" className={menuRow(true)}>
-            <LogOut size={18} />
-            <span className={css({ flex: 1 })}>로그아웃</span>
-          </button>
-        </form>
       </div>
     </div>
   );

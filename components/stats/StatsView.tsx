@@ -9,8 +9,7 @@ import { css, cx } from "@/styled-system/css";
 
 const card = cx(cardSurface, css({ padding: "5" }));
 const sectionTitle = css({
-  textStyle: "lg",
-  fontWeight: 700,
+  textStyle: "displaySm",
   color: "text.primary",
   marginBottom: "4",
 });
