@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** 인증 없이 접근 가능한 경로 */
-const PUBLIC_PATHS = ["/login", "/auth", "/welcome"];
+const PUBLIC_PATHS = ["/welcome", "/login", "/signup", "/auth"];
 
 /**
  * 매 요청마다 Supabase 세션을 갱신하고, 미인증 사용자를 /login으로 보낸다.
@@ -47,7 +47,7 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublic) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
+    redirectUrl.pathname = "/welcome";
     return NextResponse.redirect(redirectUrl);
   }
 

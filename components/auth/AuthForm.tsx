@@ -1,22 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { createClient } from "@/lib/supabase/client";
-import { css, cx } from "@/styled-system/css";
+import { css } from "@/styled-system/css";
 
-type Mode = "login" | "signup" | "reset";
+const linkBtn = css({
+  fontSize: "sm",
+  color: "text.secondary",
+  cursor: "pointer",
+  _hover: { color: "text.primary" },
+});
 
-export function AuthForm() {
+export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const { show } = useToast();
   const supabase = createClient();
 
-  const [mode, setMode] = useState<Mode>("login");
+  const [resetting, setResetting] = useState(false);
+  const view = resetting ? "reset" : mode;
+
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,11 +38,15 @@ export function AuthForm() {
       show("이메일을 입력해주세요.", "error");
       return;
     }
-    if (mode !== "reset" && !password) {
+    if (view === "signup" && !name.trim()) {
+      show("이름을 입력해주세요.", "error");
+      return;
+    }
+    if (view !== "reset" && !password) {
       show("비밀번호를 입력해주세요.", "error");
       return;
     }
-    if (mode === "signup" && password.length < 6) {
+    if (view === "signup" && password.length < 6) {
       show("비밀번호는 6자 이상이어야 해요.", "error");
       return;
     }
@@ -42,11 +55,8 @@ export function AuthForm() {
     const origin = window.location.origin;
 
     try {
-      if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      if (view === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         show("로그인되었어요.", "success");
         router.push("/");
@@ -54,11 +64,14 @@ export function AuthForm() {
         return;
       }
 
-      if (mode === "signup") {
+      if (view === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${origin}/auth/confirm` },
+          options: {
+            emailRedirectTo: `${origin}/auth/confirm`,
+            data: { username: name.trim() },
+          },
         });
         if (error) throw error;
         if (data.session) {
@@ -67,7 +80,7 @@ export function AuthForm() {
           router.refresh();
         } else {
           show("확인 메일을 보냈어요. 메일 링크로 가입을 완료해주세요.", "success");
-          setMode("login");
+          router.push("/login");
         }
         return;
       }
@@ -78,7 +91,7 @@ export function AuthForm() {
       });
       if (error) throw error;
       show("비밀번호 재설정 메일을 보냈어요.", "success");
-      setMode("login");
+      setResetting(false);
     } catch (err) {
       show(err instanceof Error ? err.message : "오류가 발생했어요.", "error");
     } finally {
@@ -88,51 +101,8 @@ export function AuthForm() {
 
   return (
     <div>
-      {mode !== "reset" && (
-        <div
-          className={css({
-            display: "flex",
-            gap: "1",
-            padding: "1",
-            bg: "surface.muted",
-            borderRadius: "full",
-            marginBottom: "6",
-          })}
-        >
-          {(["login", "signup"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className={cx(
-                css({
-                  flex: 1,
-                  height: "40px",
-                  borderRadius: "full",
-                  fontSize: "sm",
-                  fontWeight: 600,
-                  color: "text.secondary",
-                  cursor: "pointer",
-                  transition: "background 0.15s ease, color 0.15s ease",
-                }),
-                mode === m &&
-                  css({ bg: "surface", color: "text.primary", boxShadow: "card" }),
-              )}
-            >
-              {m === "login" ? "로그인" : "회원가입"}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {mode === "reset" && (
-        <p
-          className={css({
-            marginBottom: "6",
-            fontSize: "sm",
-            color: "text.secondary",
-          })}
-        >
+      {view === "reset" && (
+        <p className={css({ marginBottom: "6", fontSize: "sm", color: "text.secondary" })}>
           가입한 이메일로 비밀번호 재설정 링크를 보내드려요.
         </p>
       )}
@@ -141,6 +111,17 @@ export function AuthForm() {
         onSubmit={handleSubmit}
         className={css({ display: "flex", flexDirection: "column", gap: "4" })}
       >
+        {view === "signup" && (
+          <Input
+            id="name"
+            name="name"
+            label="이름"
+            placeholder="표시할 이름"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
         <Input
           id="email"
           name="email"
@@ -151,14 +132,14 @@ export function AuthForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        {mode !== "reset" && (
+        {view !== "reset" && (
           <Input
             id="password"
             name="password"
             type="password"
             label="비밀번호"
-            placeholder={mode === "signup" ? "6자 이상" : "비밀번호"}
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            placeholder={view === "signup" ? "6자 이상" : "비밀번호"}
+            autoComplete={view === "signup" ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -167,9 +148,9 @@ export function AuthForm() {
         <Button type="submit" fullWidth disabled={loading} className={css({ marginTop: "2" })}>
           {loading ? (
             <Loader2 size={18} className={css({ animation: "spin 1s linear infinite" })} />
-          ) : mode === "login" ? (
+          ) : view === "login" ? (
             "로그인"
-          ) : mode === "signup" ? (
+          ) : view === "signup" ? (
             "회원가입"
           ) : (
             "재설정 메일 보내기"
@@ -179,34 +160,32 @@ export function AuthForm() {
 
       <div
         className={css({
-          marginTop: "5",
-          textAlign: "center",
+          marginTop: "6",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "3",
         })}
       >
-        {mode === "reset" ? (
-          <button
-            type="button"
-            onClick={() => setMode("login")}
-            className={css({
-              fontSize: "sm",
-              color: "text.secondary",
-              cursor: "pointer",
-            })}
-          >
+        {view === "reset" ? (
+          <button type="button" onClick={() => setResetting(false)} className={linkBtn}>
             로그인으로 돌아가기
           </button>
+        ) : view === "login" ? (
+          <>
+            <button type="button" onClick={() => setResetting(true)} className={linkBtn}>
+              비밀번호 찾기
+            </button>
+            <span className={css({ color: "border" })}>·</span>
+            <Link href="/signup" className={linkBtn}>
+              회원가입
+            </Link>
+          </>
         ) : (
-          <button
-            type="button"
-            onClick={() => setMode("reset")}
-            className={css({
-              fontSize: "sm",
-              color: "text.secondary",
-              cursor: "pointer",
-            })}
-          >
-            비밀번호를 잊으셨나요?
-          </button>
+          <Link href="/login" className={linkBtn}>
+            이미 계정이 있으신가요?{" "}
+            <span className={css({ color: "text.primary", fontWeight: 600 })}>로그인</span>
+          </Link>
         )}
       </div>
     </div>

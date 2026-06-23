@@ -13,14 +13,14 @@ const wrap = css({
   bg: "bg",
 });
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <div className={wrap}>
-      <h1 className={css({ textStyle: "displayMd", color: "text.primary" })}>Login</h1>
+      <h1 className={css({ textStyle: "displayMd", color: "text.primary" })}>Sign up</h1>
       <p className={css({ marginTop: "2", marginBottom: "8", fontSize: "sm", color: "text.secondary" })}>
-        다시 만나서 반가워요.
+        나만의 옷장을 시작해보세요.
       </p>
-      <AuthForm mode="login" />
+      <AuthForm mode="signup" />
     </div>
   );
 }

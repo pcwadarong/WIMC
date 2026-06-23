@@ -1,62 +1,69 @@
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { css } from "@/styled-system/css";
 
+const cta = css({ display: "block", width: "100%" });
+
+/** 온보딩 랜딩 — 미인증 진입점 (파스텔 그라디언트 + WIMC + CTA) */
 export default function WelcomePage() {
   return (
     <div
       className={css({
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        textAlign: "center",
         minHeight: "100dvh",
         maxWidth: "app",
         marginX: "auto",
-        paddingX: "5",
-        bg: "bg",
+        paddingX: "6",
+        paddingTop: "16",
+        paddingBottom: "12",
+        backgroundImage:
+          "linear-gradient(160deg, token(colors.accent.green), token(colors.accent.lavender))",
       })}
     >
-      <span className={css({ color: "success", marginBottom: "5" })}>
-        <CheckCircle2 size={56} strokeWidth={1.6} />
-      </span>
-      <h1
-        className={css({
-          textStyle: "2xl",
-          fontWeight: 800,
-          color: "brown.dark",
-        })}
-      >
-        WIMC에 오신 걸 환영해요
-      </h1>
-      <p
-        className={css({
-          marginTop: "3",
-          textStyle: "base",
-          color: "text.secondary",
-        })}
-      >
-        이메일 인증이 완료됐어요.
-        <br />
-        이제 나만의 옷장을 채워볼까요?
-      </p>
-
-      <div className={css({ marginTop: "10", width: "100%" })}>
-        <Link href="/">
-          <Button fullWidth>시작하기</Button>
-        </Link>
-        <Link
-          href="/login"
+      <div className={css({ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" })}>
+        <h1
           className={css({
-            display: "block",
-            marginTop: "3",
-            fontSize: "sm",
-            color: "text.secondary",
+            fontFamily: "serif",
+            fontStyle: "italic",
+            fontWeight: 700,
+            fontSize: "64px",
+            lineHeight: "1",
+            color: "brown.dark",
           })}
         >
-          로그인 화면으로
+          WIMC
+        </h1>
+        <p
+          className={css({
+            marginTop: "5",
+            fontSize: "lg",
+            lineHeight: "1.5",
+            color: "brown.dark",
+            maxWidth: "24ch",
+          })}
+        >
+          What&rsquo;s In My Closet — your wardrobe, outfits, and daily style log.
+        </p>
+      </div>
+
+      <div className={css({ display: "flex", flexDirection: "column", gap: "3" })}>
+        <Link href="/login" className={cta}>
+          <Button fullWidth>로그인하기</Button>
+        </Link>
+        <Link href="/signup" className={cta}>
+          <Button
+            fullWidth
+            variant="secondary"
+            className={css({
+              bg: "surface",
+              borderWidth: "1.5px",
+              borderStyle: "solid",
+              borderColor: "brown.dark",
+            })}
+          >
+            회원가입
+          </Button>
         </Link>
       </div>
     </div>

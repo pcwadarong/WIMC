@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   // 비밀번호 재설정 등은 next로 지정, 가입 확인은 기본 환영 페이지로
-  const next = searchParams.get("next") ?? "/welcome";
+  const next = searchParams.get("next") ?? "/";
 
   if (token_hash && type) {
     const supabase = await createClient();
