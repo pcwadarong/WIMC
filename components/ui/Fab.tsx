@@ -18,11 +18,13 @@ export function Fab({ href, label }: { href: string; label: string }) {
         width: "56px",
         height: "56px",
         borderRadius: "full",
-        bg: "brown.dark",
-        color: "white",
+        bg: "accent.yellow", // 파스텔 포인트 + 잉크 아웃라인
+        color: "brown.dark",
+        borderWidth: "1.5px",
+        borderStyle: "solid",
+        borderColor: "brown.dark",
         boxShadow: "modal",
         zIndex: 30,
-        _hover: { bg: "brown.mid" },
         _active: { transform: "scale(0.95)" },
       })}
     >

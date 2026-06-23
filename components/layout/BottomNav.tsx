@@ -13,28 +13,28 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "홈", icon: Home, match: (p) => p === "/" },
+  { href: "/", label: "Home", icon: Home, match: (p) => p === "/" },
   {
     href: "/closet",
-    label: "옷장",
+    label: "Closet",
     icon: Shirt,
     match: (p) => p.startsWith("/closet"),
   },
   {
     href: "/outfits",
-    label: "코디",
+    label: "Outfits",
     icon: LayoutGrid,
     match: (p) => p.startsWith("/outfits"),
   },
   {
     href: "/calendar",
-    label: "캘린더",
+    label: "Calendar",
     icon: Calendar,
     match: (p) => p.startsWith("/calendar") || p.startsWith("/trips"),
   },
   {
     href: "/profile",
-    label: "마이",
+    label: "My",
     icon: User,
     match: (p) =>
       p.startsWith("/profile") || p.startsWith("/account") || p.startsWith("/stats"),

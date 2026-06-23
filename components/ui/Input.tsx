@@ -9,21 +9,21 @@ const field = css({
   width: "100%",
   height: "52px",
   paddingX: "4",
-  bg: "surface.muted",
-  borderRadius: "sm",
+  bg: "surface",
+  borderRadius: "xs", // 거의 각진(최소)
   borderWidth: "1px",
   borderStyle: "solid",
-  borderColor: "transparent",
+  borderColor: "border", // 기본 = 다크 그레이(또렷)
   fontFamily: "sans",
   fontSize: "base",
   letterSpacing: "-0.025em",
   color: "text.primary",
-  transition: "border-color 0.15s ease, background 0.15s ease",
+  transition: "border-color 0.15s ease, outline 0.1s ease",
   _placeholder: { color: "text.tertiary" },
   _focusVisible: {
-    outline: "none",
+    outline: "2px solid token(colors.border.focus)", // 포커스 = 블랙
+    outlineOffset: "0",
     borderColor: "border.focus",
-    bg: "surface",
   },
 });
 

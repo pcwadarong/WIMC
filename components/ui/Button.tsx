@@ -19,11 +19,12 @@ const base = css({
   fontFamily: "sans",
   fontWeight: 600,
   letterSpacing: "-0.02em",
-  borderRadius: "full",
+  borderRadius: "xs", // 거의 각진(최소)
   cursor: "pointer",
   transition: "background 0.15s ease, opacity 0.15s ease, transform 0.1s ease",
   whiteSpace: "nowrap",
   _active: { transform: "scale(0.98)" },
+  _focusVisible: { outline: "2px solid token(colors.border.focus)", outlineOffset: "2px" },
   _disabled: { opacity: 0.5, cursor: "not-allowed", _active: { transform: "none" } },
 });
 

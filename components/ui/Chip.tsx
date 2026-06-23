@@ -4,7 +4,6 @@ import { cx } from "@/styled-system/css";
 
 interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean;
-  variant?: "fill" | "outline";
   size?: "sm" | "md";
   children: ReactNode;
 }
@@ -12,7 +11,6 @@ interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /** 토글 칩 버튼 (탭/필터/다중선택 공통) */
 export function Chip({
   active = false,
-  variant = "outline",
   size = "md",
   className,
   children,
@@ -22,7 +20,7 @@ export function Chip({
   return (
     <button
       type={type}
-      className={cx(chipClass({ active, variant, size }), className)}
+      className={cx(chipClass({ active, size }), className)}
       {...props}
     >
       {children}

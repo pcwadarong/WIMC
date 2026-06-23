@@ -1,40 +1,53 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PRESET_COLORS } from "@/lib/constants/colors";
 import type { ColorValue } from "@/types";
-import { chipClass } from "@/components/ui/styles";
-import { css } from "@/styled-system/css";
+import { css, cx } from "@/styled-system/css";
 
 interface ColorPickerProps {
   value: ColorValue[];
   onChange: (colors: ColorValue[]) => void;
 }
 
-const grid = css({
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "2",
-});
+const row = css({ display: "flex", flexWrap: "wrap", gap: "2.5" });
 
-// 항상 1.5px 테두리를 유지해 선택 시 크기/모양이 변하지 않게 함 (단일 css로 active 충돌 방지)
-const chip = (active: boolean) =>
-  chipClass({ active, variant: "outline", size: "sm" });
-
-const swatch = css({
-  width: "16px",
-  height: "16px",
+// 동그라미 스와치 (레퍼런스 color radio selector). 선택 시 블랙 링.
+const dot = css({
+  width: "36px",
+  height: "36px",
   borderRadius: "full",
   borderWidth: "1px",
   borderStyle: "solid",
   borderColor: "border",
+  cursor: "pointer",
   flexShrink: 0,
+  transition: "outline 0.1s ease",
+  _focusVisible: { outline: "2px solid token(colors.border.focus)", outlineOffset: "2px" },
 });
+
+const dotSelected = css({
+  outline: "2px solid token(colors.brown.dark)",
+  outlineOffset: "2px",
+});
+
+const addDot = cx(
+  dot,
+  css({
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    bg: "surface",
+    borderStyle: "dashed",
+    color: "text.secondary",
+    _hover: { borderColor: "brown.dark", color: "brown.dark" },
+  }),
+);
 
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
   const [showCustom, setShowCustom] = useState(false);
-  const [customHex, setCustomHex] = useState("#2C1A0E");
+  const [customHex, setCustomHex] = useState("#1A1A1A");
   const [customLabel, setCustomLabel] = useState("");
 
   const has = (hex: string) =>
@@ -62,7 +75,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
 
   return (
     <div className={css({ display: "flex", flexDirection: "column", gap: "3" })}>
-      <div className={grid}>
+      <div className={row}>
         {PRESET_COLORS.map((c) => {
           const active = has(c.hex);
           return (
@@ -70,39 +83,46 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
               key={c.hex}
               type="button"
               onClick={() => toggle(c)}
-              className={chip(active)}
-            >
-              <span className={swatch} style={{ background: c.hex }} />
-              {c.label}
-              {active && <Check size={14} />}
-            </button>
+              aria-pressed={active}
+              aria-label={c.label}
+              title={c.label}
+              className={cx(dot, active && dotSelected)}
+              style={{ background: c.hex }}
+            />
           );
         })}
 
-        {/* 직접 선택한 커스텀 색상 칩 */}
+        {/* 직접 선택한 커스텀 색상 */}
         {customSelected.map((c) => (
           <button
             key={c.hex}
             type="button"
             onClick={() => toggle(c)}
-            className={chip(true)}
-          >
-            <span className={swatch} style={{ background: c.hex }} />
-            {c.label}
-            <Check size={14} />
-          </button>
+            aria-pressed
+            aria-label={c.label}
+            title={c.label}
+            className={cx(dot, dotSelected)}
+            style={{ background: c.hex }}
+          />
         ))}
 
         {/* 직접 입력 토글 */}
         <button
           type="button"
           onClick={() => setShowCustom((v) => !v)}
-          className={chip(showCustom)}
+          aria-label="색상 직접 추가"
+          className={addDot}
         >
-          <Plus size={14} />
-          직접 입력
+          <Plus size={16} />
         </button>
       </div>
+
+      {/* 선택된 색 이름 (데이터 명확성) */}
+      {value.length > 0 && (
+        <p className={css({ fontSize: "xs", color: "text.secondary" })}>
+          {value.map((c) => c.label).join(", ")}
+        </p>
+      )}
 
       {showCustom && (
         <div className={css({ display: "flex", alignItems: "center", gap: "2" })}>
@@ -116,7 +136,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
               height: "44px",
               padding: 0,
               border: "none",
-              borderRadius: "sm",
+              borderRadius: "xs",
               bg: "transparent",
               cursor: "pointer",
               flexShrink: 0,
@@ -131,12 +151,18 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
               flex: 1,
               height: "44px",
               paddingX: "3",
-              bg: "surface.muted",
-              borderRadius: "sm",
+              bg: "surface",
+              borderRadius: "xs",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "border",
               fontSize: "sm",
               color: "text.primary",
               _placeholder: { color: "text.tertiary" },
-              _focusVisible: { outline: "none" },
+              _focusVisible: {
+                outline: "2px solid token(colors.border.focus)",
+                outlineOffset: "0",
+              },
             })}
           />
           <button
@@ -148,7 +174,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
               gap: "1",
               height: "44px",
               paddingX: "4",
-              borderRadius: "full",
+              borderRadius: "xs",
               bg: "brown.dark",
               color: "white",
               fontSize: "sm",

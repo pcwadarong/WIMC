@@ -21,24 +21,25 @@ export default defineConfig({
     extend: {
       tokens: {
         colors: {
+          // 모노톤 잉크 (갈색 제거). 이름은 호환 위해 brown 유지 — 값은 중립 그레이.
           brown: {
-            dark: { value: "#2C1A0E" }, // 키컬러, 주요 텍스트, 버튼
-            mid: { value: "#6B3F2A" }, // 보조 액센트, 호버
-            light: { value: "#C4956A" }, // 서브 액센트, 아이콘
+            dark: { value: "#1A1A1A" }, // 잉크: 아웃라인/버튼/제목
+            mid: { value: "#555555" }, // 호버/보조
+            light: { value: "#9A9A9A" }, // 아이콘/서브
           },
-          bg: { value: "#FAFAF8" }, // 전체 배경
+          bg: { value: "#F5F5F3" }, // 전체 배경 (중립 오프화이트)
           surface: {
             DEFAULT: { value: "#FFFFFF" }, // 카드, 모달
-            muted: { value: "#F4F2EE" }, // 필터칩, 인풋 배경
+            muted: { value: "#EFEFED" }, // 필터칩, 인풋 배경 (중립)
           },
           text: {
-            primary: { value: "#1A1208" },
-            secondary: { value: "#6B6560" },
-            tertiary: { value: "#B0ABA6" },
+            primary: { value: "#1A1A1A" },
+            secondary: { value: "#6A6A6A" },
+            tertiary: { value: "#A6A6A6" },
           },
           border: {
-            DEFAULT: { value: "#E8E4DE" },
-            focus: { value: "#2C1A0E" },
+            DEFAULT: { value: "#8A8A8A" }, // 기본 보더 = 다크 그레이(또렷)
+            focus: { value: "#000000" }, // 포커스 = 블랙
           },
           error: { value: "#C0392B" },
           success: { value: "#27AE60" },
@@ -51,11 +52,24 @@ export default defineConfig({
             error: { value: "#FF9B8A" }, // 다크 배경 위 에러 아이콘
             success: { value: "#86E5A8" }, // 다크 배경 위 성공 아이콘
           },
+          // 파스텔 액센트 (카테고리·활성칩·카드 포인트). 위에 brown.dark 텍스트.
+          accent: {
+            peach: { value: "#F0D2B4" },
+            pink: { value: "#F1CEDA" },
+            lavender: { value: "#D9CFEC" },
+            blue: { value: "#C5D8EC" },
+            green: { value: "#CBE0BD" },
+            yellow: { value: "#F2DE82" }, // 활성 하이라이트(레퍼런스 옐로)
+          },
         },
         fonts: {
           sans: {
             value:
               "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif",
+          },
+          // 에디토리얼 제목용 세리프 (Fraunces, globals.css에서 CDN 로드)
+          serif: {
+            value: "'Fraunces', 'Pretendard Variable', Georgia, serif",
           },
         },
         fontSizes: {
@@ -68,15 +82,17 @@ export default defineConfig({
           "3xl": { value: "30px" },
         },
         radii: {
-          sm: { value: "5px" }, // 인풋, 작은 요소 (각진 톤)
+          xs: { value: "2px" }, // 인풋/버튼 — 거의 각진(최소)
+          sm: { value: "5px" },
           md: { value: "7px" }, // 카드, 이미지
           lg: { value: "12px" }, // 바텀시트
-          full: { value: "9999px" }, // 버튼, 칩, 배지(필)
+          full: { value: "9999px" }, // 칩, 배지(필)
         },
         shadows: {
-          // 미니멀 모노: 떠 있는 그림자 대신 1px 아웃라인으로 깊이 표현
-          card: { value: "0 0 0 1px #E8E4DE" },
-          modal: { value: "0 12px 40px rgba(44, 26, 14, 0.18)" },
+          // 에디토리얼: 또렷한 잉크 아웃라인 — 종이/스티커 느낌(전 카드 통일)
+          card: { value: "0 0 0 1.5px #1A1A1A" },
+          outline: { value: "0 0 0 1.5px #1A1A1A" },
+          modal: { value: "0 12px 40px rgba(0, 0, 0, 0.18)" },
         },
         sizes: {
           app: { value: "430px" }, // 모바일 퍼스트 최대 너비
@@ -98,9 +114,44 @@ export default defineConfig({
           from: { transform: "translateY(100%)" },
           to: { transform: "translateY(0)" },
         },
+        pulse: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.45" },
+        },
       },
       // 타이포 텍스트 스타일 (자간 좁게 / 행간 넓게)
       textStyles: {
+        // 에디토리얼 세리프 제목 (Playfair Display italic)
+        displayLg: {
+          value: {
+            fontFamily: "serif",
+            fontStyle: "italic",
+            fontWeight: "700",
+            fontSize: "3xl",
+            lineHeight: "1.1",
+            letterSpacing: "-0.01em",
+          },
+        },
+        displayMd: {
+          value: {
+            fontFamily: "serif",
+            fontStyle: "italic",
+            fontWeight: "700",
+            fontSize: "2xl",
+            lineHeight: "1.15",
+            letterSpacing: "-0.01em",
+          },
+        },
+        displaySm: {
+          value: {
+            fontFamily: "serif",
+            fontStyle: "italic",
+            fontWeight: "700",
+            fontSize: "xl",
+            lineHeight: "1.2",
+            letterSpacing: "0",
+          },
+        },
         xs: {
           value: { fontSize: "xs", lineHeight: "1.6", letterSpacing: "-0.02em" },
         },
