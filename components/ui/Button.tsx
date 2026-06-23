@@ -37,7 +37,7 @@ const variants: Record<Variant, string> = {
   secondary: css({
     bg: "surface.muted",
     color: "text.primary",
-    _hover: { bg: "border" },
+    _hover: { bg: "accent.green" },
   }),
   ghost: css({
     bg: "transparent",
@@ -51,6 +51,15 @@ const sizes: Record<Size, string> = {
   lg: css({ height: "52px", paddingX: "6", fontSize: "base" }),
 };
 
+/** 버튼 클래스 (anchor 등 다른 태그에도 적용 가능 — Link를 버튼처럼 쓸 때) */
+export function buttonClass({
+  variant = "primary",
+  size = "lg",
+  fullWidth = false,
+}: { variant?: Variant; size?: Size; fullWidth?: boolean } = {}) {
+  return cx(base, variants[variant], sizes[size], fullWidth && css({ width: "100%" }));
+}
+
 export function Button({
   variant = "primary",
   size = "lg",
@@ -63,13 +72,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={cx(
-        base,
-        variants[variant],
-        sizes[size],
-        fullWidth && css({ width: "100%" }),
-        className,
-      )}
+      className={cx(buttonClass({ variant, size, fullWidth }), className)}
       {...props}
     >
       {children}

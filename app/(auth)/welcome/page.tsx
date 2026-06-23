@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
-import { css } from "@/styled-system/css";
-
-const cta = css({ display: "block", width: "100%" });
+import { buttonClass } from "@/components/ui/Button";
+import { css, cx } from "@/styled-system/css";
 
 /** 온보딩 랜딩 — 미인증 진입점 (파스텔 그라디언트 + WIMC + CTA) */
 export default function WelcomePage() {
@@ -48,22 +46,22 @@ export default function WelcomePage() {
       </div>
 
       <div className={css({ display: "flex", flexDirection: "column", gap: "3" })}>
-        <Link href="/login" className={cta}>
-          <Button fullWidth>로그인하기</Button>
+        <Link href="/login" className={buttonClass({ fullWidth: true })}>
+          로그인하기
         </Link>
-        <Link href="/signup" className={cta}>
-          <Button
-            fullWidth
-            variant="secondary"
-            className={css({
+        <Link
+          href="/signup"
+          className={cx(
+            buttonClass({ variant: "secondary", fullWidth: true }),
+            css({
               bg: "surface",
               borderWidth: "1.5px",
               borderStyle: "solid",
               borderColor: "brown.dark",
-            })}
-          >
-            회원가입
-          </Button>
+            }),
+          )}
+        >
+          회원가입
         </Link>
       </div>
     </div>

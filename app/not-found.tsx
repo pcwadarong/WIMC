@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { buttonClass } from "@/components/ui/Button";
 import { css } from "@/styled-system/css";
 
 export default function NotFound() {
@@ -38,8 +38,8 @@ export default function NotFound() {
       </p>
 
       <div className={css({ marginTop: "10", width: "100%" })}>
-        <Link href="/" className={css({ display: "block", width: "100%" })}>
-          <Button fullWidth>홈으로</Button>
+        <Link href="/" className={buttonClass({ fullWidth: true })}>
+          홈으로
         </Link>
       </div>
     </div>
