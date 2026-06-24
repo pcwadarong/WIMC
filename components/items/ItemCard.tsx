@@ -1,32 +1,40 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Shirt } from "lucide-react";
+import { Heart, Shirt, Check } from "lucide-react";
 import type { Item } from "@/types";
 import { ITEM_STATUS_LABELS } from "@/types";
 import { primaryImageUrl } from "@/lib/utils/item";
-import { css } from "@/styled-system/css";
+import { css, cx } from "@/styled-system/css";
 
 // 기존 import 경로 호환을 위해 재노출
 export { primaryImageUrl } from "@/lib/utils/item";
 
-export function ItemCard({ item }: { item: Item }) {
+const imgWrap = css({
+  position: "relative",
+  aspectRatio: "1",
+  borderRadius: "lg",
+  overflow: "hidden",
+  bg: "surface.muted",
+  boxShadow: "card", // 잉크 아웃라인
+});
+
+const imgWrapSelected = css({
+  boxShadow: "0 0 0 2.5px token(colors.brown.dark)",
+});
+
+interface ItemCardProps {
+  item: Item;
+  selectionMode?: boolean;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
+}
+
+export function ItemCard({ item, selectionMode, selected, onSelect }: ItemCardProps) {
   const url = primaryImageUrl(item);
 
-  return (
-    <Link
-      href={`/closet/${item.id}`}
-      className={css({ display: "block" })}
-    >
-      <div
-        className={css({
-          position: "relative",
-          aspectRatio: "1",
-          borderRadius: "lg",
-          overflow: "hidden",
-          bg: "surface.muted",
-          boxShadow: "card", // 잉크 아웃라인
-        })}
-      >
+  const visual = (
+    <>
+      <div className={cx(imgWrap, selectionMode && selected && imgWrapSelected)}>
         {url ? (
           <Image
             src={url}
@@ -48,19 +56,44 @@ export function ItemCard({ item }: { item: Item }) {
             <Shirt size={32} strokeWidth={1.5} />
           </div>
         )}
-        {item.is_favorite && (
+
+        {selectionMode ? (
           <span
             className={css({
               position: "absolute",
               top: "2",
               right: "2",
-              color: "white",
-              filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "24px",
+              height: "24px",
+              borderRadius: "full",
+              borderWidth: "1.5px",
+              borderStyle: "solid",
+              borderColor: "brown.dark",
+              bg: selected ? "accent.green" : "whiteMuted",
+              color: "brown.dark",
             })}
           >
-            <Heart size={18} fill="currentColor" />
+            {selected && <Check size={15} strokeWidth={3} />}
           </span>
+        ) : (
+          item.is_favorite && (
+            <span
+              className={css({
+                position: "absolute",
+                top: "2",
+                right: "2",
+                color: "white",
+                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
+              })}
+            >
+              <Heart size={18} fill="currentColor" />
+            </span>
+          )
         )}
+
         {item.status && item.status !== "owned" && (
           <span
             className={css({
@@ -101,6 +134,25 @@ export function ItemCard({ item }: { item: Item }) {
           </p>
         )}
       </div>
+    </>
+  );
+
+  if (selectionMode) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSelect?.(item.id)}
+        aria-pressed={selected}
+        className={css({ display: "block", width: "100%", textAlign: "left", cursor: "pointer" })}
+      >
+        {visual}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={`/closet/${item.id}`} className={css({ display: "block" })}>
+      {visual}
     </Link>
   );
 }

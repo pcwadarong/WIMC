@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Heart, ShoppingBag, SlidersHorizontal, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Search, Heart, ShoppingBag, SlidersHorizontal, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { GridSkeleton } from "@/components/ui/Skeleton";
 import { ItemCard } from "@/components/items/ItemCard";
+import { useToast } from "@/components/ui/Toast";
+import { bulkDeleteItems, bulkSetFavorite } from "@/app/(app)/closet/actions";
 import { SEASON_LABELS, type Season } from "@/types";
 import { useItems, useCategories } from "@/lib/queries/hooks";
 import { buildCategoryMap } from "@/lib/utils/category";
@@ -26,6 +29,27 @@ const sheetSectionTitle = css({
   marginBottom: "3",
 });
 
+// 다중선택 액션바 버튼
+const barBtn = (variant: "pink" | "plain" | "danger") =>
+  css({
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "1.5",
+    flex: 1,
+    height: "42px",
+    borderRadius: "full",
+    borderWidth: "1.5px",
+    borderStyle: "solid",
+    fontSize: "sm",
+    fontWeight: 600,
+    cursor: "pointer",
+    borderColor: variant === "danger" ? "error" : "brown.dark",
+    bg: variant === "pink" ? "accent.pink" : "surface",
+    color: variant === "danger" ? "error" : "text.primary",
+    _disabled: { opacity: 0.4, cursor: "not-allowed" },
+  });
+
 export function ClosetView() {
   const { data: items = [], isLoading: itemsLoading } = useItems();
   const { data: categories = [], isLoading: catsLoading } = useCategories();
@@ -41,6 +65,25 @@ export function ClosetView() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [sort, setSort] = useState<ItemSort>("recent");
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+  const { show } = useToast();
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState(false);
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const exitSelect = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
 
   const presentColors = useMemo(() => {
     const map = new Map<string, string>();
@@ -74,6 +117,33 @@ export function ClosetView() {
 
   const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort]);
   const activeCount = colors.length + materials.length + seasons.length;
+
+  const allSelected = sorted.length > 0 && sorted.every((it) => selectedIds.has(it.id));
+  const toggleAll = () =>
+    setSelectedIds(allSelected ? new Set() : new Set(sorted.map((it) => it.id)));
+
+  const runBulk = async (fn: () => Promise<{ ok: true } | { error: string }>, msg: string) => {
+    if (selectedIds.size === 0 || busy) return;
+    setBusy(true);
+    const result = await fn();
+    setBusy(false);
+    if ("error" in result) {
+      show(result.error, "error");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["items"] });
+    queryClient.invalidateQueries({ queryKey: ["stats"] });
+    show(msg, "success");
+    exitSelect();
+  };
+
+  const ids = () => [...selectedIds];
+  const onDelete = () => {
+    if (!confirm(`선택한 ${selectedIds.size}개를 삭제할까요?`)) return;
+    runBulk(() => bulkDeleteItems(ids()), "삭제했어요.");
+  };
+  const onFav = () => runBulk(() => bulkSetFavorite(ids(), true), "즐겨찾기에 추가했어요.");
+  const onUnfav = () => runBulk(() => bulkSetFavorite(ids(), false), "즐겨찾기를 해제했어요.");
 
   const toggle = <T,>(list: T[], set: (v: T[]) => void, v: T) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -261,6 +331,36 @@ export function ClosetView() {
         </select>
       </div>
 
+      {/* 선택 모드 컨트롤 */}
+      <div
+        className={css({
+          display: "flex",
+          alignItems: "center",
+          justifyContent: selectMode ? "space-between" : "flex-end",
+          marginTop: "3",
+          minHeight: "26px",
+          fontSize: "sm",
+        })}
+      >
+        {selectMode ? (
+          <>
+            <button type="button" onClick={toggleAll} className={css({ color: "text.secondary", fontWeight: 500, cursor: "pointer" })}>
+              {allSelected ? "선택 해제" : "전체 선택"}
+            </button>
+            <div className={css({ display: "flex", alignItems: "center", gap: "3" })}>
+              <span className={css({ color: "text.secondary" })}>{selectedIds.size}개</span>
+              <button type="button" onClick={exitSelect} className={css({ color: "text.secondary", fontWeight: 600, cursor: "pointer" })}>
+                취소
+              </button>
+            </div>
+          </>
+        ) : (
+          <button type="button" onClick={() => setSelectMode(true)} className={css({ color: "text.secondary", fontWeight: 600, cursor: "pointer" })}>
+            선택
+          </button>
+        )}
+      </div>
+
       {/* 결과 */}
       {sorted.length === 0 ? (
         <p className={css({ marginTop: "10", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
@@ -277,8 +377,46 @@ export function ClosetView() {
           })}
         >
           {sorted.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard
+              key={item.id}
+              item={item}
+              selectionMode={selectMode}
+              selected={selectedIds.has(item.id)}
+              onSelect={toggleSelect}
+            />
           ))}
+        </div>
+      )}
+
+      {/* 다중선택 액션 바 */}
+      {selectMode && (
+        <div
+          className={css({
+            position: "fixed",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: "calc(env(safe-area-inset-bottom) + 88px)",
+            zIndex: 45,
+            width: "calc(min(100vw, token(sizes.app)) - 28px)",
+            display: "flex",
+            gap: "2",
+            padding: "2",
+            bg: "surface",
+            borderRadius: "full",
+            boxShadow: "0 0 0 1.5px token(colors.brown.dark), 0 10px 28px rgba(0, 0, 0, 0.14)",
+          })}
+        >
+          <button type="button" onClick={onFav} disabled={selectedIds.size === 0 || busy} className={barBtn("pink")}>
+            <Heart size={16} />
+            좋아요
+          </button>
+          <button type="button" onClick={onUnfav} disabled={selectedIds.size === 0 || busy} className={barBtn("plain")}>
+            좋아요 해제
+          </button>
+          <button type="button" onClick={onDelete} disabled={selectedIds.size === 0 || busy} className={barBtn("danger")}>
+            <Trash2 size={16} />
+            삭제
+          </button>
         </div>
       )}
 

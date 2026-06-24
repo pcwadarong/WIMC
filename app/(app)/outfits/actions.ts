@@ -88,3 +88,24 @@ export async function deleteOutfit(id: string): Promise<ActionResult> {
   revalidatePath("/outfits");
   return { ok: true };
 }
+
+/** 다중 삭제 */
+export async function bulkDeleteOutfits(ids: string[]): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+  if (ids.length === 0) return { ok: true };
+
+  const { error } = await supabase
+    .from("outfits")
+    .delete()
+    .in("id", ids)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/outfits");
+  return { ok: true };
+}

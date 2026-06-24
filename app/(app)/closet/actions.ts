@@ -142,3 +142,49 @@ export async function deleteItem(id: string): Promise<ActionResult> {
   revalidatePath("/");
   return { ok: true };
 }
+
+/** 다중 삭제 */
+export async function bulkDeleteItems(ids: string[]): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+  if (ids.length === 0) return { ok: true };
+
+  const { error } = await supabase
+    .from("items")
+    .delete()
+    .in("id", ids)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/closet");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** 다중 즐겨찾기 설정/해제 */
+export async function bulkSetFavorite(
+  ids: string[],
+  value: boolean,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+  if (ids.length === 0) return { ok: true };
+
+  const { error } = await supabase
+    .from("items")
+    .update({ is_favorite: value })
+    .in("id", ids)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/closet");
+  return { ok: true };
+}
