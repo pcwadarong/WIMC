@@ -52,6 +52,9 @@ export default defineConfig({
             error: { value: "#FF9B8A" }, // 다크 배경 위 에러 아이콘
             success: { value: "#86E5A8" }, // 다크 배경 위 성공 아이콘
           },
+          // 즐겨찾기(분홍)·위시리스트(자주) 강조색
+          like: { value: "#E8568C" },
+          wish: { value: "#7E57C2" },
           // 파스텔 액센트 (카테고리·활성칩·카드 포인트). 위에 brown.dark 텍스트.
           accent: {
             peach: { value: "#F0D2B4" },

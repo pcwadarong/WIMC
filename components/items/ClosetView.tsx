@@ -2,14 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Heart, ShoppingBag, SlidersHorizontal, X, Trash2 } from "lucide-react";
+import { Search, Heart, SlidersHorizontal, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { GridSkeleton } from "@/components/ui/Skeleton";
+import { Fab } from "@/components/ui/Fab";
 import { ItemCard } from "@/components/items/ItemCard";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { bulkDeleteItems, bulkSetFavorite } from "@/app/(app)/closet/actions";
+import { bulkDeleteItems, toggleFavorite } from "@/app/(app)/closet/actions";
 import { SEASON_LABELS, type Season } from "@/types";
 import { useItems, useCategories } from "@/lib/queries/hooks";
 import { buildCategoryMap } from "@/lib/utils/category";
@@ -18,6 +19,7 @@ import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
 
 const title = css({ textStyle: "displayMd", color: "text.primary", marginBottom: "4" });
+const ctrlBtn = css({ color: "text.secondary", fontWeight: 600, cursor: "pointer" });
 
 const MATERIALS = ["면", "폴리에스터", "울", "아크릴", "나일론", "린넨", "데님", "가죽", "캐시미어"];
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
@@ -59,7 +61,7 @@ export function ClosetView() {
 
   const [cat, setCat] = useState("");
   const [fav, setFav] = useState(false);
-  const [wishlist, setWishlist] = useState(false);
+  const [wishFilter, setWishFilter] = useState<"exclude" | "all" | "only">("exclude");
   const [search, setSearch] = useState("");
   const [colors, setColors] = useState<string[]>([]);
   const [materials, setMaterials] = useState<string[]>([]);
@@ -97,9 +99,9 @@ export function ClosetView() {
   const filtered = useMemo(
     () =>
       items.filter((it) => {
-        // 위시리스트(구매고민)는 기본 목록에서 분리
-        if (wishlist ? it.status !== "wishlist" : it.status === "wishlist")
-          return false;
+        // 위시리스트 필터 (제외 / 전체 / 위시만)
+        if (wishFilter === "exclude" && it.status === "wishlist") return false;
+        if (wishFilter === "only" && it.status !== "wishlist") return false;
         if (cat) {
           const pn = it.category_id ? categoryMap[it.category_id]?.parentName : undefined;
           if (pn !== cat) return false;
@@ -114,11 +116,17 @@ export function ClosetView() {
         if (seasons.length && !(it.season && seasons.includes(it.season))) return false;
         return true;
       }),
-    [items, wishlist, cat, fav, search, colors, materials, seasons, categoryMap],
+    [items, wishFilter, cat, fav, search, colors, materials, seasons, categoryMap],
   );
 
   const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort]);
-  const activeCount = colors.length + materials.length + seasons.length;
+  const activeCount =
+    colors.length + materials.length + seasons.length + (wishFilter !== "exclude" ? 1 : 0);
+
+  const onToggleFav = async (id: string, next: boolean) => {
+    await toggleFavorite(id, next);
+    queryClient.invalidateQueries({ queryKey: ["items"] });
+  };
 
   const allSelected = sorted.length > 0 && sorted.every((it) => selectedIds.has(it.id));
   const toggleAll = () =>
@@ -139,7 +147,6 @@ export function ClosetView() {
     exitSelect();
   };
 
-  const ids = () => [...selectedIds];
   const onDelete = async () => {
     const ok = await confirm({
       title: `선택한 ${selectedIds.size}개를 삭제할까요?`,
@@ -148,10 +155,8 @@ export function ClosetView() {
       danger: true,
     });
     if (!ok) return;
-    runBulk(() => bulkDeleteItems(ids()), "삭제했어요.");
+    runBulk(() => bulkDeleteItems([...selectedIds]), "삭제했어요.");
   };
-  const onFav = () => runBulk(() => bulkSetFavorite(ids(), true), "즐겨찾기에 추가했어요.");
-  const onUnfav = () => runBulk(() => bulkSetFavorite(ids(), false), "즐겨찾기를 해제했어요.");
 
   const toggle = <T,>(list: T[], set: (v: T[]) => void, v: T) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -160,6 +165,7 @@ export function ClosetView() {
     setColors([]);
     setMaterials([]);
     setSeasons([]);
+    setWishFilter("exclude");
   };
 
   if (itemsLoading || catsLoading) {
@@ -186,9 +192,7 @@ export function ClosetView() {
 
   return (
     <>
-      <h1 className={title}>
-        {wishlist ? "Wishlist" : "Closet"}
-      </h1>
+      <h1 className={title}>Closet</h1>
 
       {/* 검색 + 필터 */}
       <div className={css({ display: "flex", gap: "2", marginBottom: "3" })}>
@@ -270,6 +274,15 @@ export function ClosetView() {
         <button type="button" className={chipClass({ active: !cat, size: "sm" })} onClick={() => setCat("")}>
           전체
         </button>
+        <button
+          type="button"
+          onClick={() => setFav((v) => !v)}
+          aria-pressed={fav}
+          className={chipClass({ active: fav, size: "sm", color: "pink" })}
+        >
+          <Heart size={13} fill={fav ? "currentColor" : "none"} />
+          즐겨찾기
+        </button>
         {parents.map((p) => (
           <button
             key={p}
@@ -283,96 +296,64 @@ export function ClosetView() {
         ))}
       </div>
 
-      {/* 빠른 필터 + 정렬 */}
-      <div
-        className={css({
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "2",
-          marginTop: "3",
-        })}
-      >
-        <div className={css({ display: "flex", gap: "2" })}>
-          <button
-            type="button"
-            onClick={() => setFav((v) => !v)}
-            aria-pressed={fav}
-            className={chipClass({ active: fav, size: "sm", color: "pink" })}
-          >
-            <Heart size={14} fill={fav ? "currentColor" : "none"} />
-            즐겨찾기
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setWishlist((v) => !v);
-              setFav(false);
-            }}
-            aria-pressed={wishlist}
-            className={chipClass({ active: wishlist, size: "sm", color: "purple" })}
-          >
-            <ShoppingBag size={14} />
-            위시리스트
-          </button>
-        </div>
-        <select
-          aria-label="정렬"
-          value={sort}
-          onChange={(e) => setSort(e.target.value as ItemSort)}
-          className={css({
-            height: "32px",
-            paddingX: "2",
-            bg: "transparent",
-            fontSize: "sm",
-            color: "text.secondary",
-            cursor: "pointer",
-            flexShrink: 0,
-            _focusVisible: { outline: "none" },
-          })}
-        >
-          {SORTS.map((s) => (
-            <option key={s} value={s}>
-              {ITEM_SORT_LABELS[s]}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* 선택 모드 컨트롤 */}
+      {/* 정렬 + 선택 (우측) / 선택 모드 헤더 */}
       <div
         className={css({
           display: "flex",
           alignItems: "center",
           justifyContent: selectMode ? "space-between" : "flex-end",
+          gap: "3",
           marginTop: "3",
-          minHeight: "26px",
+          minHeight: "32px",
           fontSize: "sm",
         })}
       >
         {selectMode ? (
           <>
-            <button type="button" onClick={toggleAll} className={css({ color: "text.secondary", fontWeight: 500, cursor: "pointer" })}>
+            <button type="button" onClick={toggleAll} className={ctrlBtn}>
               {allSelected ? "선택 해제" : "전체 선택"}
             </button>
             <div className={css({ display: "flex", alignItems: "center", gap: "3" })}>
               <span className={css({ color: "text.secondary" })}>{selectedIds.size}개</span>
-              <button type="button" onClick={exitSelect} className={css({ color: "text.secondary", fontWeight: 600, cursor: "pointer" })}>
+              <button type="button" onClick={exitSelect} className={ctrlBtn}>
                 취소
               </button>
             </div>
           </>
         ) : (
-          <button type="button" onClick={() => setSelectMode(true)} className={css({ color: "text.secondary", fontWeight: 600, cursor: "pointer" })}>
-            선택
-          </button>
+          <>
+            <select
+              aria-label="정렬"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as ItemSort)}
+              className={css({
+                height: "32px",
+                paddingX: "2",
+                bg: "transparent",
+                fontSize: "sm",
+                color: "text.secondary",
+                cursor: "pointer",
+                flexShrink: 0,
+                _focusVisible: { outline: "none" },
+              })}
+            >
+              {SORTS.map((s) => (
+                <option key={s} value={s}>
+                  {ITEM_SORT_LABELS[s]}
+                </option>
+              ))}
+            </select>
+            <button type="button" onClick={() => setSelectMode(true)} className={ctrlBtn}>
+              선택
+            </button>
+          </>
         )}
       </div>
 
       {/* 결과 */}
       {sorted.length === 0 ? (
         <p className={css({ marginTop: "10", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
-          {wishlist ? "위시리스트가 비어 있어요. 아이템 상태를 ‘구매고민’으로 등록해보세요." : "조건에 맞는 아이템이 없어요."}
+          {wishFilter === "only" ? "위시리스트가 비어 있어요. 아이템 상태를 ‘구매고민’으로 등록해보세요." : "조건에 맞는 아이템이 없어요."}
         </p>
       ) : (
         <div
@@ -391,12 +372,13 @@ export function ClosetView() {
               selectionMode={selectMode}
               selected={selectedIds.has(item.id)}
               onSelect={toggleSelect}
+              onToggleFavorite={onToggleFav}
             />
           ))}
         </div>
       )}
 
-      {/* 다중선택 액션 바 */}
+      {/* 다중선택 액션 바 (삭제) */}
       {selectMode && (
         <div
           className={css({
@@ -407,26 +389,21 @@ export function ClosetView() {
             zIndex: 45,
             width: "calc(min(100vw, token(sizes.app)) - 28px)",
             display: "flex",
-            gap: "2",
             padding: "2",
             bg: "surface",
             borderRadius: "full",
             boxShadow: "0 0 0 1.5px token(colors.brown.dark), 0 10px 28px rgba(0, 0, 0, 0.14)",
           })}
         >
-          <button type="button" onClick={onFav} disabled={selectedIds.size === 0 || busy} className={barBtn("pink")}>
-            <Heart size={16} />
-            좋아요
-          </button>
-          <button type="button" onClick={onUnfav} disabled={selectedIds.size === 0 || busy} className={barBtn("plain")}>
-            좋아요 해제
-          </button>
           <button type="button" onClick={onDelete} disabled={selectedIds.size === 0 || busy} className={barBtn("danger")}>
             <Trash2 size={16} />
             삭제
           </button>
         </div>
       )}
+
+      {/* 추가 FAB (선택 모드엔 숨김) */}
+      {!selectMode && <Fab href="/closet/new" label="아이템 추가" />}
 
       {/* 필터 바텀시트 */}
       <BottomSheet
@@ -445,6 +422,26 @@ export function ClosetView() {
         }
       >
         <div className={css({ display: "flex", flexDirection: "column", gap: "6" })}>
+          <div>
+            <p className={sheetSectionTitle}>위시리스트</p>
+            <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
+              {([
+                ["exclude", "위시 제외"],
+                ["all", "전체"],
+                ["only", "위시만"],
+              ] as const).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={chipClass({ active: wishFilter === v, size: "sm", color: "purple" })}
+                  onClick={() => setWishFilter(v)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {presentColors.length > 0 && (
             <div>
               <p className={sheetSectionTitle}>색상</p>

@@ -27,9 +27,32 @@ interface ItemCardProps {
   selectionMode?: boolean;
   selected?: boolean;
   onSelect?: (id: string) => void;
+  /** 제공 시 이미지 우하단 즐겨찾기 토글 버튼 노출 */
+  onToggleFavorite?: (id: string, next: boolean) => void;
 }
 
-export function ItemCard({ item, selectionMode, selected, onSelect }: ItemCardProps) {
+const heartBtn = css({
+  position: "absolute",
+  bottom: "2",
+  right: "2",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "30px",
+  height: "30px",
+  borderRadius: "full",
+  bg: "whiteMuted",
+  boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+  cursor: "pointer",
+});
+
+export function ItemCard({
+  item,
+  selectionMode,
+  selected,
+  onSelect,
+  onToggleFavorite,
+}: ItemCardProps) {
   const url = primaryImageUrl(item);
 
   const visual = (
@@ -57,7 +80,7 @@ export function ItemCard({ item, selectionMode, selected, onSelect }: ItemCardPr
           </div>
         )}
 
-        {selectionMode ? (
+        {selectionMode && (
           <span
             className={css({
               position: "absolute",
@@ -78,21 +101,35 @@ export function ItemCard({ item, selectionMode, selected, onSelect }: ItemCardPr
           >
             {selected && <Check size={15} strokeWidth={3} />}
           </span>
-        ) : (
-          item.is_favorite && (
-            <span
-              className={css({
-                position: "absolute",
-                top: "2",
-                right: "2",
-                color: "white",
-                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
-              })}
-            >
-              <Heart size={18} fill="currentColor" />
-            </span>
-          )
         )}
+
+        {/* 즐겨찾기: 핸들러 있으면 토글, 없으면 즐겨찾기일 때만 표시 */}
+        {!selectionMode &&
+          (onToggleFavorite ? (
+            <button
+              type="button"
+              aria-label={item.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
+              aria-pressed={item.is_favorite}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite(item.id, !item.is_favorite);
+              }}
+              className={heartBtn}
+            >
+              <Heart
+                size={17}
+                className={css({ color: "like" })}
+                fill={item.is_favorite ? "currentColor" : "none"}
+              />
+            </button>
+          ) : (
+            item.is_favorite && (
+              <span className={heartBtn}>
+                <Heart size={17} className={css({ color: "like" })} fill="currentColor" />
+              </span>
+            )
+          ))}
 
         {item.status && item.status !== "owned" && (
           <span

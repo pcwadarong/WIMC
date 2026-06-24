@@ -1,6 +1,5 @@
 import { OutfitsList } from "@/components/outfits/OutfitsList";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { Fab } from "@/components/ui/Fab";
 import { css } from "@/styled-system/css";
 
 export default function OutfitsPage() {
@@ -10,7 +9,6 @@ export default function OutfitsPage() {
         Outfits
       </h1>
       <OutfitsList />
-      <Fab href="/outfits/new" label="코디 만들기" />
     </PageContainer>
   );
 }

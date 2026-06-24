@@ -10,6 +10,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { bulkDeleteOutfits } from "@/app/(app)/outfits/actions";
 import { indexById } from "@/lib/utils/item";
 import { GridSkeleton } from "@/components/ui/Skeleton";
+import { Fab } from "@/components/ui/Fab";
 import { css } from "@/styled-system/css";
 
 type OutfitSort = "recent" | "oldest" | "name";
@@ -201,6 +202,8 @@ export function OutfitsList() {
           </button>
         </div>
       )}
+
+      {!selectMode && <Fab href="/outfits/new" label="코디 만들기" />}
     </>
   );
 }
