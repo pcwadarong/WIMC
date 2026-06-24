@@ -13,6 +13,7 @@ import { createOutfit, updateOutfit } from "@/app/(app)/outfits/actions";
 import type { CategoryMap } from "@/lib/recommend";
 import type { Item } from "@/types";
 import { chipClass } from "@/components/ui/styles";
+import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import { css } from "@/styled-system/css";
 
 export function OutfitBuilder({
@@ -39,6 +40,8 @@ export function OutfitBuilder({
   const [name, setName] = useState(initialName);
   const [cat, setCat] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  useUnsavedGuard(dirty);
 
   const filtered = useMemo(() => {
     if (!cat) return items;
@@ -47,10 +50,12 @@ export function OutfitBuilder({
     );
   }, [items, cat, categoryMap]);
 
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    setDirty(true);
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+  };
 
   const save = async () => {
     if (selected.length === 0) {
@@ -73,6 +78,7 @@ export function OutfitBuilder({
       return;
     }
     show(isEdit ? "수정했어요." : "코디를 저장했어요.", "success");
+    setDirty(false);
     queryClient.invalidateQueries({ queryKey: ["outfits"] });
     router.push(outfitId ? `/outfits/${outfitId}` : "/outfits");
   };
@@ -87,7 +93,10 @@ export function OutfitBuilder({
           id="outfitName"
           label="코디 이름"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setDirty(true);
+          }}
           placeholder="예: 비 오는 날 캠퍼스룩"
         />
       </div>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
 import "./globals.css";
 
@@ -31,7 +32,9 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <QueryProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <ConfirmProvider>{children}</ConfirmProvider>
+          </ToastProvider>
         </QueryProvider>
         <RegisterSW />
       </body>

@@ -25,6 +25,7 @@ import type {
   SizeInfo,
 } from "@/types";
 import { fieldStyle } from "@/components/ui/styles";
+import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import { css, cx } from "@/styled-system/css";
 
 const SEASONS = Object.keys(SEASON_LABELS) as Season[];
@@ -121,6 +122,9 @@ export function ItemForm({
   const [sizeInfo, setSizeInfo] = useState<SizeInfo>(item?.size_info ?? {});
 
   const [submitting, setSubmitting] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const touch = () => setDirty(true);
+  useUnsavedGuard(dirty);
 
   const parentCategory = useMemo(
     () => categories.find((c) => c.id === parentId),
@@ -192,6 +196,7 @@ export function ItemForm({
         return;
       }
       show(isEdit ? "수정했어요." : "아이템을 저장했어요.", "success");
+      setDirty(false);
       queryClient.invalidateQueries({ queryKey: ["items"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       router.push(item ? `/closet/${item.id}` : "/closet");
@@ -202,9 +207,9 @@ export function ItemForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={css({ paddingBottom: "6" })}>
+    <form onSubmit={handleSubmit} onInput={touch} className={css({ paddingBottom: "6" })}>
       <Section title="Photos">
-        <ImageUpload value={images} onChange={setImages} />
+        <ImageUpload value={images} onChange={(v) => { setImages(v); touch(); }} />
       </Section>
 
       <Section title="Basic">
@@ -261,12 +266,12 @@ export function ItemForm({
 
         <div>
           <span className={fieldLabel}>색상</span>
-          <ColorPicker value={colors} onChange={setColors} />
+          <ColorPicker value={colors} onChange={(v) => { setColors(v); touch(); }} />
         </div>
 
         <div>
           <span className={fieldLabel}>소재</span>
-          <MaterialInput initial={item?.material ?? undefined} onChange={setMaterial} />
+          <MaterialInput initial={item?.material ?? undefined} onChange={(v) => { setMaterial(v); touch(); }} />
         </div>
 
         <div>
@@ -281,7 +286,7 @@ export function ItemForm({
                 role="radio"
                 aria-checked={season === s}
                 active={season === s}
-                onClick={() => setSeason(s)}
+                onClick={() => { setSeason(s); touch(); }}
               >
                 {SEASON_LABELS[s]}
               </Chip>
@@ -296,7 +301,7 @@ export function ItemForm({
               <Chip
                 key={s}
                 active={status === s}
-                onClick={() => setStatus(s)}
+                onClick={() => { setStatus(s); touch(); }}
               >
                 {ITEM_STATUS_LABELS[s]}
               </Chip>
@@ -317,7 +322,7 @@ export function ItemForm({
       </Section>
 
       <Section title="Size">
-        <SizeInput value={sizeInfo} onChange={setSizeInfo} category={parentName} />
+        <SizeInput value={sizeInfo} onChange={(v) => { setSizeInfo(v); touch(); }} category={parentName} />
       </Section>
 
       <Section title="Purchase">

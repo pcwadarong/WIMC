@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { createTrip } from "@/app/(app)/trips/actions";
+import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import { css } from "@/styled-system/css";
 
 export function TripForm() {
@@ -21,6 +22,8 @@ export function TripForm() {
   const [end, setEnd] = useState("");
   const [memo, setMemo] = useState("");
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  useUnsavedGuard(dirty);
 
   const save = async () => {
     if (!name.trim()) {
@@ -45,12 +48,13 @@ export function TripForm() {
       return;
     }
     show("여행을 만들었어요.", "success");
+    setDirty(false);
     queryClient.invalidateQueries({ queryKey: ["trips"] });
     router.push(`/trips/${result.id}`);
   };
 
   return (
-    <div className={css({ paddingX: "5", paddingBottom: "10", display: "flex", flexDirection: "column", gap: "4" })}>
+    <div onInput={() => setDirty(true)} className={css({ paddingX: "5", paddingBottom: "10", display: "flex", flexDirection: "column", gap: "4" })}>
       <Input id="name" label="여행 이름" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 도쿄 여행" />
       <Input id="dest" label="목적지" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="예: 도쿄" />
       <div className={css({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2" })}>

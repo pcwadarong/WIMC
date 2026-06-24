@@ -8,6 +8,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { GridSkeleton } from "@/components/ui/Skeleton";
 import { ItemCard } from "@/components/items/ItemCard";
 import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { bulkDeleteItems, bulkSetFavorite } from "@/app/(app)/closet/actions";
 import { SEASON_LABELS, type Season } from "@/types";
 import { useItems, useCategories } from "@/lib/queries/hooks";
@@ -68,6 +69,7 @@ export function ClosetView() {
 
   const queryClient = useQueryClient();
   const { show } = useToast();
+  const confirm = useConfirm();
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -138,8 +140,14 @@ export function ClosetView() {
   };
 
   const ids = () => [...selectedIds];
-  const onDelete = () => {
-    if (!confirm(`선택한 ${selectedIds.size}개를 삭제할까요?`)) return;
+  const onDelete = async () => {
+    const ok = await confirm({
+      title: `선택한 ${selectedIds.size}개를 삭제할까요?`,
+      message: "삭제하면 되돌릴 수 없어요.",
+      confirmText: "삭제",
+      danger: true,
+    });
+    if (!ok) return;
     runBulk(() => bulkDeleteItems(ids()), "삭제했어요.");
   };
   const onFav = () => runBulk(() => bulkSetFavorite(ids(), true), "즐겨찾기에 추가했어요.");

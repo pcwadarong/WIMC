@@ -22,6 +22,7 @@ import { ProfilePhotos } from "@/components/profile/ProfilePhotos";
 import { updateProfile } from "@/app/(app)/profile/actions";
 import { buildStyleAnalysisPrompt } from "@/lib/profile-note";
 import { CITY_GROUPS, cityLabel, findCity } from "@/lib/constants/cities";
+import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import type { Profile, ProfilePhotos as Photos, UserLocation } from "@/types";
 import { css, cx } from "@/styled-system/css";
 
@@ -105,11 +106,15 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
     initial?.profile_photos ?? null,
   );
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  useUnsavedGuard(editing && dirty);
 
-  const toggleKeyword = (k: string) =>
+  const toggleKeyword = (k: string) => {
+    setDirty(true);
     setKeywords((prev) =>
       prev.includes(k) ? prev.filter((v) => v !== k) : [...prev, k],
     );
+  };
 
   const save = async () => {
     setSaving(true);
@@ -126,6 +131,7 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
       return;
     }
     show("저장했어요.", "success");
+    setDirty(false);
     queryClient.invalidateQueries({ queryKey: ["profile"] });
     setEditing(false);
   };
@@ -136,6 +142,7 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
     setAnalysis(initial?.notes ?? "");
     setLocation(initial?.location ?? null);
     setPhotos(initial?.profile_photos ?? null);
+    setDirty(false);
     setEditing(false);
   };
 
@@ -191,7 +198,7 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
         </div>
 
         {editing ? (
-          <div className={css({ display: "flex", flexDirection: "column", gap: "5" })}>
+          <div onInput={() => setDirty(true)} className={css({ display: "flex", flexDirection: "column", gap: "5" })}>
             <Input
               id="username"
               label="닉네임"
@@ -225,7 +232,7 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
 
             <div>
               <span className={subLabel}>프로필 사진 (AI 참고용)</span>
-              <ProfilePhotos value={photos} onChange={setPhotos} />
+              <ProfilePhotos value={photos} onChange={(v) => { setPhotos(v); setDirty(true); }} />
             </div>
 
             <div>

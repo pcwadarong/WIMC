@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { OutfitCard } from "@/components/outfits/OutfitCard";
 import { useOutfits, useItems } from "@/lib/queries/hooks";
 import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { bulkDeleteOutfits } from "@/app/(app)/outfits/actions";
 import { indexById } from "@/lib/utils/item";
 import { GridSkeleton } from "@/components/ui/Skeleton";
@@ -28,6 +29,7 @@ export function OutfitsList() {
 
   const queryClient = useQueryClient();
   const { show } = useToast();
+  const confirm = useConfirm();
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -57,7 +59,13 @@ export function OutfitsList() {
 
   const onDelete = async () => {
     if (selectedIds.size === 0 || busy) return;
-    if (!confirm(`선택한 ${selectedIds.size}개 코디를 삭제할까요?`)) return;
+    const ok = await confirm({
+      title: `선택한 ${selectedIds.size}개 코디를 삭제할까요?`,
+      message: "삭제하면 되돌릴 수 없어요.",
+      confirmText: "삭제",
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(true);
     const result = await bulkDeleteOutfits([...selectedIds]);
     setBusy(false);

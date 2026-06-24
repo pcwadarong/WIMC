@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/Toast";
 import { compressImage } from "@/lib/utils/image";
 import { createClient } from "@/lib/supabase/client";
 import { upsertLog, deleteLog } from "@/app/(app)/calendar/actions";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import { fieldStyle } from "@/components/ui/styles";
 import { css, cx } from "@/styled-system/css";
 
@@ -44,6 +46,10 @@ export function DayLogForm({
   const [memo, setMemo] = useState(initialMemo ?? "");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const touch = () => setDirty(true);
+  const confirm = useConfirm();
+  useUnsavedGuard(dirty);
   const isEdit = Boolean(initialOutfitId || initialPhotoUrl);
 
   const upload = async (file: File | undefined) => {
@@ -63,6 +69,7 @@ export function DayLogForm({
       if (error) throw new Error(error.message);
       const { data: pub } = supabase.storage.from("logs").getPublicUrl(path);
       setPhotoUrl(pub.publicUrl);
+      touch();
     } catch (e) {
       show(e instanceof Error ? e.message : "업로드 실패", "error");
     } finally {
@@ -89,13 +96,15 @@ export function DayLogForm({
       return;
     }
     show("기록했어요.", "success");
+    setDirty(false);
     queryClient.invalidateQueries({ queryKey: ["logs"] });
     queryClient.invalidateQueries({ queryKey: ["stats"] });
     router.push("/calendar");
   };
 
   const remove = async () => {
-    if (!confirm("이 날의 기록을 삭제할까요?")) return;
+    const ok = await confirm({ title: "이 날의 기록을 삭제할까요?", confirmText: "삭제", danger: true });
+    if (!ok) return;
     setSaving(true);
     const result = await deleteLog(date);
     if ("error" in result) {
@@ -110,7 +119,7 @@ export function DayLogForm({
   };
 
   return (
-    <div className={css({ paddingX: "5", paddingBottom: "10", display: "flex", flexDirection: "column", gap: "6" })}>
+    <div onInput={touch} className={css({ paddingX: "5", paddingBottom: "10", display: "flex", flexDirection: "column", gap: "6" })}>
       {pickDate && (
         <div>
           <span className={css({ display: "block", marginBottom: "2", fontSize: "sm", fontWeight: 500, color: "text.secondary" })}>
@@ -144,7 +153,7 @@ export function DayLogForm({
             <Image src={photoUrl} alt="오늘 사진" fill sizes="240px" className={css({ objectFit: "cover" })} />
             <button
               type="button"
-              onClick={() => setPhotoUrl(null)}
+              onClick={() => { setPhotoUrl(null); touch(); }}
               aria-label="사진 제거"
               className={css({
                 position: "absolute",
@@ -223,7 +232,7 @@ export function DayLogForm({
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => setOutfitId(on ? null : o.id)}
+                  onClick={() => { setOutfitId(on ? null : o.id); touch(); }}
                   className={css({ flexShrink: 0, width: "84px", cursor: "pointer" })}
                 >
                   <div

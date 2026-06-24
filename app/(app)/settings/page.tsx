@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { KeyRound, LogOut, ChevronRight } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
-import { signOut } from "@/app/(app)/actions";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { css, cx } from "@/styled-system/css";
 
 // 각 행 = 독립된 잉크 아웃라인 카드
@@ -50,14 +50,12 @@ export default function SettingsPage() {
             <span className={css({ flex: 1 })}>비밀번호 변경</span>
             <ChevronRight size={18} className={css({ color: "text.tertiary" })} />
           </Link>
-          <form action={signOut}>
-            <button type="submit" className={cx(row, css({ color: "error" }))}>
-              <span className={cx(badge, css({ bg: "tint.error", borderColor: "error", color: "error" }))}>
-                <LogOut size={17} />
-              </span>
-              <span className={css({ flex: 1 })}>로그아웃</span>
-            </button>
-          </form>
+          <LogoutButton className={cx(row, css({ color: "error" }))}>
+            <span className={cx(badge, css({ bg: "tint.error", borderColor: "error", color: "error" }))}>
+              <LogOut size={17} />
+            </span>
+            <span className={css({ flex: 1 })}>로그아웃</span>
+          </LogoutButton>
         </div>
 
         <p className={css({ marginTop: "6", textAlign: "center", fontSize: "xs", color: "text.tertiary" })}>
