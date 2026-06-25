@@ -34,6 +34,10 @@ export function TripDayPlanner({
       return;
     }
     queryClient.invalidateQueries({ queryKey: ["trips", "detail", tripId] });
+    // 캘린더 동기화 반영
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
+    queryClient.invalidateQueries({ queryKey: ["stats"] });
+    queryClient.invalidateQueries({ queryKey: ["items"] });
   };
 
   const label = (d: string) => {

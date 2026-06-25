@@ -97,9 +97,12 @@ export function TripDetailScreen({ id }: { id: string }) {
           </p>
         )}
 
-        <h2 className={css({ textStyle: "displaySm", color: "text.primary", marginTop: "8", marginBottom: "4" })}>
+        <h2 className={css({ textStyle: "displaySm", color: "text.primary", marginTop: "8", marginBottom: "1" })}>
           Daily Outfits
         </h2>
+        <p className={css({ marginBottom: "4", fontSize: "xs", color: "text.tertiary" })}>
+          코디를 배치하면 그 날짜 캘린더에도 자동으로 기록돼요.
+        </p>
         {dates.length === 0 ? (
           <p className={css({ fontSize: "sm", color: "text.tertiary" })}>
             시작일·종료일을 설정하면 일차별로 코디를 계획할 수 있어요.
