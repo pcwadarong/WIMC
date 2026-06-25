@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Cloud, Copy, Loader2, Sparkles } from "lucide-react";
+import { Cloud, Copy, Sparkles } from "lucide-react";
 import { ItemCard } from "@/components/items/ItemCard";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import {
   recommend,
@@ -12,7 +13,7 @@ import {
   type TodayWeather,
 } from "@/lib/recommend";
 import type { Item, UserLocation } from "@/types";
-import { css } from "@/styled-system/css";
+import { css, cx } from "@/styled-system/css";
 
 // 위치 거부/실패 시 서울 좌표로 폴백
 const FALLBACK = { lat: 37.5665, lon: 126.978 };
@@ -91,18 +92,14 @@ export function TodayPanel({
 
   if (loading) {
     return (
-      <div
-        className={css({
-          marginTop: "10",
-          display: "flex",
-          alignItems: "center",
-          gap: "2",
-          color: "text.tertiary",
-          fontSize: "sm",
-        })}
-      >
-        <Loader2 size={16} className={css({ animation: "spin 1s linear infinite" })} />
-        오늘 날씨를 불러오는 중…
+      <div className={cx(card, css({ display: "flex", flexDirection: "column", gap: "4" })) }>
+        <Skeleton className={css({ height: "52px" })} />
+        <Skeleton className={css({ height: "22px", width: "60%" })} />
+        <div className={css({ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "3" })}>
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className={css({ aspectRatio: "1" })} />
+          ))}
+        </div>
       </div>
     );
   }

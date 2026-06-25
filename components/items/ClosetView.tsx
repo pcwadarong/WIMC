@@ -317,7 +317,7 @@ export function ClosetView() {
         })}
       >
         <button type="button" className={chipClass({ active: !cat, size: "sm" })} onClick={() => setCat("")}>
-          전체
+          All
         </button>
         <button
           type="button"
@@ -326,7 +326,7 @@ export function ClosetView() {
           className={chipClass({ active: fav, size: "sm", color: "pink" })}
         >
           <Heart size={13} fill={fav ? "currentColor" : "none"} />
-          즐겨찾기
+          Like
         </button>
         {parents.map((p) => (
           <button
@@ -430,11 +430,13 @@ export function ClosetView() {
             position: "fixed",
             left: "50%",
             transform: "translateX(-50%)",
-            bottom: "calc(env(safe-area-inset-bottom) + 88px)",
-            zIndex: 45,
+            bottom: "calc(env(safe-area-inset-bottom) + 14px)",
+            zIndex: 60,
             width: "calc(min(100vw, token(sizes.app)) - 28px)",
             display: "flex",
-            padding: "2",
+            height: "62px",
+            alignItems: "center",
+            paddingX: "2",
             bg: "surface",
             borderRadius: "full",
             boxShadow: "0 0 0 1.5px token(colors.brown.dark), 0 10px 28px rgba(0, 0, 0, 0.14)",
