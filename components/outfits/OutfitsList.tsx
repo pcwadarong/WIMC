@@ -2,15 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash2, Heart } from "lucide-react";
 import { OutfitCard } from "@/components/outfits/OutfitCard";
 import { useOutfits, useItems } from "@/lib/queries/hooks";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { bulkDeleteOutfits } from "@/app/(app)/outfits/actions";
+import {
+  bulkDeleteOutfits,
+  toggleOutfitFavorite,
+} from "@/app/(app)/outfits/actions";
 import { indexById } from "@/lib/utils/item";
 import { GridSkeleton } from "@/components/ui/Skeleton";
 import { Fab } from "@/components/ui/Fab";
+import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
 
 type OutfitSort = "recent" | "oldest" | "name";
@@ -27,6 +31,7 @@ export function OutfitsList() {
   const { data: items = [] } = useItems();
   const itemsById = useMemo(() => indexById(items), [items]);
   const [sort, setSort] = useState<OutfitSort>("recent");
+  const [fav, setFav] = useState(false);
 
   const queryClient = useQueryClient();
   const { show } = useToast();
@@ -36,12 +41,21 @@ export function OutfitsList() {
   const [busy, setBusy] = useState(false);
 
   const sorted = useMemo(() => {
-    const arr = [...outfits];
+    const arr = fav ? outfits.filter((o) => o.is_favorite) : [...outfits];
     if (sort === "oldest") return arr.reverse();
     if (sort === "name")
       return arr.sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"));
     return arr;
-  }, [outfits, sort]);
+  }, [outfits, sort, fav]);
+
+  const onToggleFav = async (id: string, next: boolean) => {
+    const result = await toggleOutfitFavorite(id, next);
+    if ("error" in result) {
+      show(result.error, "error");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["outfits"] });
+  };
 
   const toggleSelect = (id: string) =>
     setSelectedIds((prev) => {
@@ -91,6 +105,34 @@ export function OutfitsList() {
 
   return (
     <>
+      {!selectMode && (
+        <div
+          className={css({
+            display: "flex",
+            gap: "2",
+            marginBottom: "3",
+          })}
+        >
+          <button
+            type="button"
+            onClick={() => setFav(false)}
+            aria-pressed={!fav}
+            className={chipClass({ active: !fav, size: "sm" })}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            onClick={() => setFav(true)}
+            aria-pressed={fav}
+            className={chipClass({ active: fav, size: "sm", color: "pink" })}
+          >
+            <Heart size={13} fill={fav ? "currentColor" : "none"} />
+            Like
+          </button>
+        </div>
+      )}
+
       <div
         className={css({
           display: "flex",
@@ -139,6 +181,11 @@ export function OutfitsList() {
         )}
       </div>
 
+      {sorted.length === 0 ? (
+        <p className={css({ marginTop: "10", textAlign: "center", color: "text.tertiary", fontSize: "sm" })}>
+          즐겨찾기한 코디가 없어요.
+        </p>
+      ) : (
       <div
         className={css({
           display: "grid",
@@ -155,9 +202,11 @@ export function OutfitsList() {
             selectionMode={selectMode}
             selected={selectedIds.has(o.id)}
             onSelect={toggleSelect}
+            onToggleFavorite={onToggleFav}
           />
         ))}
       </div>
+      )}
 
       {selectMode && (
         <div

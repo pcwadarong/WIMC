@@ -89,6 +89,27 @@ export async function deleteOutfit(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+export async function toggleOutfitFavorite(
+  id: string,
+  next: boolean,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+
+  const { error } = await supabase
+    .from("outfits")
+    .update({ is_favorite: next })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/outfits");
+  return { ok: true };
+}
+
 /** 다중 삭제 */
 export async function bulkDeleteOutfits(ids: string[]): Promise<ActionResult> {
   const supabase = await createClient();

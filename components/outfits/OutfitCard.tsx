@@ -1,9 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutGrid, Check } from "lucide-react";
+import { LayoutGrid, Check, Heart } from "lucide-react";
 import { primaryImageUrl } from "@/components/items/ItemCard";
 import type { Item, Outfit } from "@/types";
 import { css, cx } from "@/styled-system/css";
+
+const heartBtn = css({
+  position: "absolute",
+  bottom: "2",
+  right: "2",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "30px",
+  height: "30px",
+  bg: "transparent",
+  color: "like",
+  cursor: "pointer",
+  zIndex: 1,
+});
 
 const wrap = css({
   position: "relative",
@@ -22,6 +37,7 @@ interface OutfitCardProps {
   selectionMode?: boolean;
   selected?: boolean;
   onSelect?: (id: string) => void;
+  onToggleFavorite?: (id: string, next: boolean) => void;
 }
 
 export function OutfitCard({
@@ -30,6 +46,7 @@ export function OutfitCard({
   selectionMode,
   selected,
   onSelect,
+  onToggleFavorite,
 }: OutfitCardProps) {
   const ids = outfit.item_ids ?? [];
   const images = ids
@@ -109,6 +126,29 @@ export function OutfitCard({
             {selected && <Check size={15} strokeWidth={3} />}
           </span>
         )}
+
+        {!selectionMode &&
+          (onToggleFavorite ? (
+            <button
+              type="button"
+              aria-label={outfit.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
+              aria-pressed={outfit.is_favorite}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite(outfit.id, !outfit.is_favorite);
+              }}
+              className={heartBtn}
+            >
+              <Heart size={24} fill={outfit.is_favorite ? "currentColor" : "none"} />
+            </button>
+          ) : (
+            outfit.is_favorite && (
+              <span className={heartBtn}>
+                <Heart size={24} fill="currentColor" />
+              </span>
+            )
+          ))}
       </div>
 
       <div className={css({ marginTop: "2" })}>
@@ -117,6 +157,7 @@ export function OutfitCard({
             fontSize: "sm",
             fontWeight: 500,
             color: "text.primary",
+            letterSpacing: "-0.02em",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -124,7 +165,7 @@ export function OutfitCard({
         >
           {outfit.name || "이름 없는 코디"}
         </p>
-        <p className={css({ fontSize: "xs", color: "text.tertiary" })}>
+        <p className={css({ fontSize: "xs", color: "text.tertiary", minHeight: "1em" })}>
           아이템 {ids.length}개
         </p>
       </div>

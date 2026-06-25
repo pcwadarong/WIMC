@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { ItemCard } from "@/components/items/ItemCard";
 import { DeleteOutfitButton } from "@/components/outfits/DeleteOutfitButton";
+import { OutfitFavoriteToggle } from "@/components/outfits/OutfitFavoriteToggle";
 import { TopBar } from "@/components/layout/TopBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { iconAction } from "@/components/ui/styles";
@@ -51,6 +52,7 @@ export function OutfitDetailScreen({ id }: { id: string }) {
         title={outfit.name || "코디"}
         action={
           <>
+            <OutfitFavoriteToggle id={outfit.id} initial={outfit.is_favorite} />
             <Link href={`/outfits/${outfit.id}/edit`} aria-label="수정" className={iconAction}>
               <Pencil size={19} />
             </Link>

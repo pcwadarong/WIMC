@@ -192,6 +192,7 @@ export interface Outfit {
   cover_image: string | null;
   ai_generated: boolean;
   tags: string[] | null;
+  is_favorite: boolean;
 
   created_at: Timestamp;
   updated_at: Timestamp;

@@ -75,7 +75,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               boxShadow: "card",
             })}
           >
-            <h2 className={css({ textStyle: "displaySm", color: "text.primary" })}>
+            <h2 className={css({ fontSize: "lg", fontWeight: 700, lineHeight: "1.4", color: "text.primary" })}>
               {opts.title}
             </h2>
             {opts.message && (
@@ -87,7 +87,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               <button type="button" onClick={() => close(false)} className={dialogBtn(false)}>
                 {opts.cancelText ?? "취소"}
               </button>
-              <button type="button" onClick={() => close(true)} className={dialogBtn(true, opts.danger)}>
+              <button type="button" onClick={() => close(true)} className={dialogBtn(true)}>
                 {opts.confirmText ?? "확인"}
               </button>
             </div>
@@ -98,7 +98,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   );
 }
 
-const dialogBtn = (primary: boolean, danger?: boolean) =>
+const dialogBtn = (primary: boolean) =>
   css({
     flex: 1,
     height: "46px",
@@ -108,7 +108,7 @@ const dialogBtn = (primary: boolean, danger?: boolean) =>
     fontSize: "sm",
     fontWeight: 600,
     cursor: "pointer",
-    borderColor: primary && danger ? "error" : "brown.dark",
-    bg: primary ? (danger ? "error" : "brown.dark") : "surface",
+    borderColor: "brown.dark",
+    bg: primary ? "brown.dark" : "surface",
     color: primary ? "white" : "text.primary",
   });

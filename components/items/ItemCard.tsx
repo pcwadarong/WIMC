@@ -42,7 +42,6 @@ const heartBtn = css({
   height: "30px",
   bg: "transparent",
   color: "like", // 분홍
-  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.35))",
   cursor: "pointer",
 });
 
@@ -84,11 +83,13 @@ export function ItemCard({
           <span
             className={css({
               position: "absolute",
-              top: "4",
-              right: "4",
+              top: "2",
+              right: "2",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              width: "24px",
+              height: "24px",
               borderRadius: "full",
               borderWidth: "1.5px",
               borderStyle: "solid",
@@ -159,11 +160,9 @@ export function ItemCard({
         >
           {item.name}
         </p>
-        {item.brand && (
-          <p className={css({ fontSize: "xs", color: "text.tertiary" })}>
-            {item.brand}
-          </p>
-        )}
+        <p className={css({ fontSize: "xs", color: "text.tertiary", minHeight: "1em" })}>
+          {item.brand || " "}
+        </p>
       </div>
     </>
   );

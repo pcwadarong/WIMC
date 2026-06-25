@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
-import { toggleFavorite } from "@/app/(app)/closet/actions";
+import { toggleOutfitFavorite } from "@/app/(app)/outfits/actions";
 import { css } from "@/styled-system/css";
 
-export function FavoriteToggle({
+export function OutfitFavoriteToggle({
   id,
   initial,
 }: {
@@ -21,8 +21,8 @@ export function FavoriteToggle({
     const next = !fav;
     setFav(next);
     startTransition(async () => {
-      await toggleFavorite(id, next);
-      queryClient.invalidateQueries({ queryKey: ["items"] });
+      await toggleOutfitFavorite(id, next);
+      queryClient.invalidateQueries({ queryKey: ["outfits"] });
     });
   };
 
