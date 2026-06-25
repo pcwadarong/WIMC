@@ -15,8 +15,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Select } from "@/components/ui/Select";
 import { Chip } from "@/components/ui/Chip";
-import { cardSurface, fieldStyle } from "@/components/ui/styles";
+import { cardSurface } from "@/components/ui/styles";
 import { useToast } from "@/components/ui/Toast";
 import { ProfilePhotos } from "@/components/profile/ProfilePhotos";
 import { updateProfile } from "@/app/(app)/profile/actions";
@@ -33,11 +35,6 @@ const subLabel = css({
   fontWeight: 500,
   color: "text.secondary",
 });
-
-const selectField = cx(
-  fieldStyle,
-  css({ height: "48px", paddingX: "3", appearance: "none", cursor: "pointer" }),
-);
 
 const STYLE_KEYWORDS = [
   "미니멀",
@@ -207,28 +204,25 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
               placeholder="표시 이름"
             />
 
-            <div>
-              <span className={subLabel}>위치 (날씨 기준)</span>
-              <select
-                className={selectField}
-                value={location?.label ?? ""}
-                onChange={(e) => setLocation(findCity(e.target.value))}
-              >
-                <option value="">현재 위치 (GPS)</option>
-                {CITY_GROUPS.map((g) => (
-                  <optgroup key={g.region} label={g.region}>
-                    {g.cities.map((c) => {
-                      const lbl = cityLabel(g.region, c.name);
-                      return (
-                        <option key={lbl} value={lbl}>
-                          {c.name}
-                        </option>
-                      );
-                    })}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="위치 (날씨 기준)"
+              value={location?.label ?? ""}
+              onChange={(e) => setLocation(findCity(e.target.value))}
+            >
+              <option value="">현재 위치 (GPS)</option>
+              {CITY_GROUPS.map((g) => (
+                <optgroup key={g.region} label={g.region}>
+                  {g.cities.map((c) => {
+                    const lbl = cityLabel(g.region, c.name);
+                    return (
+                      <option key={lbl} value={lbl}>
+                        {c.name}
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              ))}
+            </Select>
 
             <div>
               <span className={subLabel}>프로필 사진 (AI 참고용)</span>
@@ -281,15 +275,12 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
                   <Copy size={12} />
                 </button>
               </div>
-              <textarea
+              <Textarea
                 value={analysis}
                 onChange={(e) => setAnalysis(e.target.value)}
                 rows={10}
                 placeholder="‘분석 프롬프트 복사’를 복사하여 사용하는 AI와 대화한 후 마지막에 정리된 분석을 여기 붙여넣으세요."
-                className={cx(
-                  fieldStyle,
-                  css({ padding: "4", fontSize: "sm", lineHeight: "1.7", resize: "vertical" }),
-                )}
+                className={css({ fontSize: "sm", lineHeight: "1.7" })}
               />
             </div>
 

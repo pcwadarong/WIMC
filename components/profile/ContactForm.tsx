@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { submitInquiry } from "@/app/(app)/contact/actions";
-import { fieldStyle } from "@/components/ui/styles";
-import { css, cx } from "@/styled-system/css";
+import { css } from "@/styled-system/css";
 
 const CONTACT_EMAIL = "pcwadarong@naver.com";
 
@@ -48,18 +48,14 @@ export function ContactForm() {
         placeholder="예: 코디 저장 오류"
       />
 
-      <div>
-        <span className={css({ display: "block", marginBottom: "2", fontSize: "sm", fontWeight: 500, color: "text.secondary" })}>
-          내용
-        </span>
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={6}
-          placeholder="문의 내용을 적어주세요."
-          className={cx(fieldStyle, css({ padding: "4", resize: "vertical" }))}
-        />
-      </div>
+      <Textarea
+        id="message"
+        label="내용"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        rows={6}
+        placeholder="문의 내용을 적어주세요."
+      />
 
       <Button type="button" fullWidth onClick={send} disabled={sending}>
         {sending ? (

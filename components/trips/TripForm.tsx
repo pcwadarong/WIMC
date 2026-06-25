@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { createTrip } from "@/app/(app)/trips/actions";
 import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
@@ -61,28 +62,14 @@ export function TripForm() {
         <Input id="start" type="date" label="시작일" value={start} onChange={(e) => setStart(e.target.value)} />
         <Input id="end" type="date" label="종료일" value={end} onChange={(e) => setEnd(e.target.value)} />
       </div>
-      <div>
-        <span className={css({ display: "block", marginBottom: "2", fontSize: "sm", fontWeight: 500, color: "text.secondary" })}>
-          메모
-        </span>
-        <textarea
-          value={memo}
-          onChange={(e) => setMemo(e.target.value)}
-          rows={3}
-          placeholder="준비물, 일정 등"
-          className={css({
-            width: "100%",
-            padding: "4",
-            bg: "surface.muted",
-            borderRadius: "sm",
-            fontSize: "base",
-            color: "text.primary",
-            resize: "vertical",
-            _placeholder: { color: "text.tertiary" },
-            _focusVisible: { outline: "none" },
-          })}
-        />
-      </div>
+      <Textarea
+        id="tripMemo"
+        label="메모"
+        value={memo}
+        onChange={(e) => setMemo(e.target.value)}
+        rows={3}
+        placeholder="준비물, 일정 등"
+      />
       <Button type="button" fullWidth onClick={save} disabled={saving} className={css({ marginTop: "2" })}>
         {saving ? <Loader2 size={18} className={css({ animation: "spin 1s linear infinite" })} /> : "여행 만들기"}
       </Button>

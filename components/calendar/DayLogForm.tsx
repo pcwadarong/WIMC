@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Check, ImagePlus, Loader2, LayoutGrid, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { compressImage } from "@/lib/utils/image";
 import { createClient } from "@/lib/supabase/client";
@@ -299,18 +300,14 @@ export function DayLogForm({
       </div>
 
       {/* 메모 */}
-      <div>
-        <span className={css({ display: "block", marginBottom: "2", fontSize: "sm", fontWeight: 500, color: "text.secondary" })}>
-          메모
-        </span>
-        <textarea
-          value={memo}
-          onChange={(e) => setMemo(e.target.value)}
-          rows={3}
-          placeholder="오늘의 코디 메모"
-          className={cx(fieldStyle, css({ padding: "4", resize: "vertical" }))}
-        />
-      </div>
+      <Textarea
+        id="logMemo"
+        label="메모"
+        value={memo}
+        onChange={(e) => setMemo(e.target.value)}
+        rows={3}
+        placeholder="오늘의 코디 메모 (날씨, 기분, TPO 등)"
+      />
 
       <div className={css({ display: "flex", flexDirection: "column", gap: "3" })}>
         <Button type="button" fullWidth onClick={save} disabled={saving || uploading}>

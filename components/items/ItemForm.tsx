@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Chip } from "@/components/ui/Chip";
 import { useToast } from "@/components/ui/Toast";
 import { ColorPicker } from "@/components/ui/ColorPicker";
@@ -309,16 +310,14 @@ export function ItemForm({
           </div>
         </div>
 
-        <div>
-          <span className={fieldLabel}>메모</span>
-          <textarea
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            rows={3}
-            placeholder="자유 메모"
-            className={cx(fieldStyle, css({ padding: "4", resize: "vertical" }))}
-          />
-        </div>
+        <Textarea
+          id="memo"
+          label="메모"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          rows={3}
+          placeholder="자유 메모 (소재, 핏, 코디 팁 등)"
+        />
       </Section>
 
       <Section title="Size">
