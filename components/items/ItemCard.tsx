@@ -1,26 +1,14 @@
 import Link from "next/link";
-import Image from "next/image";
-import { Heart, Shirt, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import type { Item } from "@/types";
 import { ITEM_STATUS_LABELS } from "@/types";
+import { FavoriteHeart } from "@/components/ui/FavoriteHeart";
+import { Thumb } from "@/components/ui/Thumb";
 import { primaryImageUrl } from "@/lib/utils/item";
-import { css, cx } from "@/styled-system/css";
+import { css } from "@/styled-system/css";
 
 // 기존 import 경로 호환을 위해 재노출
 export { primaryImageUrl } from "@/lib/utils/item";
-
-const imgWrap = css({
-  position: "relative",
-  aspectRatio: "1",
-  borderRadius: "lg",
-  overflow: "hidden",
-  bg: "surface.muted",
-  boxShadow: "card", // 잉크 아웃라인
-});
-
-const imgWrapSelected = css({
-  boxShadow: "0 0 0 2.5px token(colors.brown.dark)",
-});
 
 interface ItemCardProps {
   item: Item;
@@ -29,21 +17,9 @@ interface ItemCardProps {
   onSelect?: (id: string) => void;
   /** 제공 시 이미지 우하단 즐겨찾기 토글 버튼 노출 */
   onToggleFavorite?: (id: string, next: boolean) => void;
+  /** 하트 아이콘 크기 (작은 그리드의 표시용엔 작게) */
+  heartSize?: number;
 }
-
-const heartBtn = css({
-  position: "absolute",
-  bottom: "2",
-  right: "2",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "30px",
-  height: "30px",
-  bg: "transparent",
-  color: "like", // 분홍
-  cursor: "pointer",
-});
 
 export function ItemCard({
   item,
@@ -51,34 +27,20 @@ export function ItemCard({
   selected,
   onSelect,
   onToggleFavorite,
+  heartSize = 24,
 }: ItemCardProps) {
   const url = primaryImageUrl(item);
 
   const visual = (
     <>
-      <div className={cx(imgWrap, selectionMode && selected && imgWrapSelected)}>
-        {url ? (
-          <Image
-            src={url}
-            alt={item.name}
-            fill
-            sizes="(max-width: 430px) 50vw, 215px"
-            className={css({ objectFit: "cover" })}
-          />
-        ) : (
-          <div
-            className={css({
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              color: "text.tertiary",
-            })}
-          >
-            <Shirt size={32} strokeWidth={1.5} />
-          </div>
-        )}
-
+      <Thumb
+        src={url}
+        alt={item.name}
+        radius="lg"
+        outlined
+        selected={selectionMode && selected}
+        iconSize={32}
+      >
         {selectionMode && (
           <span
             className={css({
@@ -103,28 +65,13 @@ export function ItemCard({
         )}
 
         {/* 즐겨찾기: 핸들러 있으면 토글, 없으면 즐겨찾기일 때만 표시 */}
-        {!selectionMode &&
-          (onToggleFavorite ? (
-            <button
-              type="button"
-              aria-label={item.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
-              aria-pressed={item.is_favorite}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite(item.id, !item.is_favorite);
-              }}
-              className={heartBtn}
-            >
-              <Heart size={24} fill={item.is_favorite ? "currentColor" : "none"} />
-            </button>
-          ) : (
-            item.is_favorite && (
-              <span className={heartBtn}>
-                <Heart size={24} fill="currentColor" />
-              </span>
-            )
-          ))}
+        {!selectionMode && (
+          <FavoriteHeart
+            active={item.is_favorite}
+            size={heartSize}
+            onToggle={onToggleFavorite ? (next) => onToggleFavorite(item.id, next) : undefined}
+          />
+        )}
 
         {item.status && item.status !== "owned" && (
           <span
@@ -144,7 +91,7 @@ export function ItemCard({
             {ITEM_STATUS_LABELS[item.status]}
           </span>
         )}
-      </div>
+      </Thumb>
 
       <div className={css({ marginTop: "2" })}>
         <p

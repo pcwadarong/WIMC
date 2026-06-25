@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Pencil, Trash2 } from "lucide-react";
 import { useItem, useCategories, useItemWears } from "@/lib/queries/hooks";
 import { ItemDetail } from "@/components/items/ItemDetail";
 import { FavoriteToggle } from "@/components/items/FavoriteToggle";
-import { DeleteItemButton } from "@/components/items/DeleteItemButton";
 import { TopBar } from "@/components/layout/TopBar";
+import { OverflowMenu } from "@/components/ui/OverflowMenu";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { iconAction } from "@/components/ui/styles";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
+import { deleteItem } from "@/app/(app)/closet/actions";
 import type { CategoryNode } from "@/types";
 import { css } from "@/styled-system/css";
 
@@ -26,9 +27,16 @@ function resolveCategoryLabel(
 }
 
 export function ItemDetailScreen({ id }: { id: string }) {
+  const router = useRouter();
   const { data: item, isLoading } = useItem(id);
   const { data: categories = [] } = useCategories();
   const { data: wears } = useItemWears(id);
+  const del = useConfirmDelete({
+    title: "이 아이템을 삭제할까요?",
+    action: () => deleteItem(id),
+    invalidateKeys: [["items"], ["stats"]],
+    redirect: "/closet",
+  });
 
   if (isLoading) {
     return (
@@ -63,10 +71,12 @@ export function ItemDetailScreen({ id }: { id: string }) {
         action={
           <>
             <FavoriteToggle id={item.id} initial={item.is_favorite} />
-            <Link href={`/closet/${item.id}/edit`} aria-label="수정" className={iconAction}>
-              <Pencil size={19} />
-            </Link>
-            <DeleteItemButton id={item.id} />
+            <OverflowMenu
+              items={[
+                { label: "수정", icon: <Pencil size={17} />, onClick: () => router.push(`/closet/${item.id}/edit`) },
+                { label: "삭제", icon: <Trash2 size={17} />, danger: true, onClick: del.run },
+              ]}
+            />
           </>
         }
       />

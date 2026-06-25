@@ -5,6 +5,7 @@ import Link from "next/link";
 import { OutfitCard } from "@/components/outfits/OutfitCard";
 import { TodayPanel } from "@/components/home/TodayPanel";
 import { SeeMore } from "@/components/ui/SeeMore";
+import { Thumb } from "@/components/ui/Thumb";
 import {
   useItems,
   useOutfits,
@@ -39,8 +40,8 @@ export function HomeView() {
   // 어제 입은 코디 썸네일 (코디 목록에서 조회)
   let yThumb: string | null = null;
   let yName: string | null = null;
-  if (yLog?.photo_url) {
-    yThumb = yLog.photo_url;
+  if (yLog?.photos?.length) {
+    yThumb = yLog.photos[0];
   } else if (yLog?.outfit_id || (yLog?.item_ids?.length ?? 0) > 0) {
     const o = yLog?.outfit_id ? outfits.find((x) => x.id === yLog.outfit_id) : undefined;
     const ids = o ? o.item_ids ?? [] : yLog?.item_ids ?? [];
@@ -81,29 +82,16 @@ export function HomeView() {
               padding: "3",
             })}
           >
-            <div
-              className={css({
-                position: "relative",
-                width: "60px",
-                height: "60px",
-                borderRadius: "sm",
-                overflow: "hidden",
-                bg: "surface.muted",
-                flexShrink: 0,
-              })}
-            >
-              {yThumb && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={yThumb}
-                  alt=""
-                  className={css({ width: "100%", height: "100%", objectFit: "cover" })}
-                />
-              )}
-            </div>
+            <Thumb
+              src={yThumb}
+              radius="sm"
+              outlined
+              iconSize={22}
+              className={css({ width: "60px", flexShrink: 0 })}
+            />
             <div className={css({ minWidth: 0 })}>
               <p className={css({ fontSize: "sm", fontWeight: 600, color: "text.primary" })}>
-                {yName || (yLog.photo_url ? "어제 기록" : "코디")}
+                {yName || (yLog.photos?.length ? "어제 기록" : "코디")}
               </p>
               {yLog.memo && (
                 <p
@@ -146,7 +134,7 @@ export function HomeView() {
             })}
           >
             {recentOutfits.map((o) => (
-              <OutfitCard key={o.id} outfit={o} itemsById={itemsById} />
+              <OutfitCard key={o.id} outfit={o} itemsById={itemsById} heartSize={15} />
             ))}
           </div>
         </section>

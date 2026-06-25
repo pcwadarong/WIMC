@@ -48,7 +48,7 @@ export function DayLogScreen({
       date={effectiveDate}
       initialOutfitId={log?.outfit_id ?? null}
       initialItemIds={log?.item_ids ?? []}
-      initialPhotoUrl={log?.photo_url ?? null}
+      initialPhotos={log?.photos ?? []}
       initialMemo={log?.memo ?? null}
       outfits={outfitThumbs}
       items={items}

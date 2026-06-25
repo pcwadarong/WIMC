@@ -30,6 +30,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
         borderBottomWidth: "1px",
         borderBottomStyle: "solid",
         borderBottomColor: "border",
+        _last: { borderBottomWidth: "0" },
       })}
     >
       <span
@@ -111,7 +112,7 @@ export function ItemDetail({
       measurementEntries.length > 0);
 
   return (
-    <div className={css({ paddingX: "5", paddingBottom: "10" })}>
+    <div className={css({ paddingX: "5", paddingTop: "3", paddingBottom: "10" })}>
       {/* 이미지 */}
       {ordered.length > 0 ? (
         <div

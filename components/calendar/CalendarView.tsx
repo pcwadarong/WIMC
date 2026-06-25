@@ -34,7 +34,7 @@ export function CalendarView() {
 
   // 썸네일은 코디/즉석조합 기반 기록이 있을 때만 outfits/items 조회
   const needsOutfitThumbs = logs.some(
-    (l) => !l.photo_url && (l.outfit_id || (l.item_ids?.length ?? 0) > 0),
+    (l) => !(l.photos?.length) && (l.outfit_id || (l.item_ids?.length ?? 0) > 0),
   );
   const { data: outfits = [] } = useOutfits({ enabled: needsOutfitThumbs });
   const { data: items = [] } = useItems(undefined, { enabled: needsOutfitThumbs });
@@ -48,7 +48,7 @@ export function CalendarView() {
   const monthSpend = summary?.spend ?? 0;
 
   const thumb = (log: DailyLog): string | null => {
-    if (log.photo_url) return log.photo_url;
+    if (log.photos?.length) return log.photos[0];
     const ids = log.outfit_id
       ? outfitsById[log.outfit_id]?.item_ids ?? []
       : log.item_ids ?? [];

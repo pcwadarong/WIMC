@@ -30,7 +30,6 @@ function getPosition(): Promise<{ lat: number; lon: number }> {
 }
 
 const card = css({
-  marginTop: "10",
   padding: "5",
   bg: "surface",
   borderRadius: "md",
@@ -181,7 +180,7 @@ export function TodayPanel({
               })}
             >
               {rec.picks.map((item) => (
-                <ItemCard key={item.id} item={item} />
+                <ItemCard key={item.id} item={item} heartSize={15} />
               ))}
             </div>
           ) : (

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { GridSkeleton } from "@/components/ui/Skeleton";
 import { Fab } from "@/components/ui/Fab";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { ItemCard } from "@/components/items/ItemCard";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
@@ -19,7 +20,6 @@ import { sortItems, ITEM_SORT_LABELS, type ItemSort } from "@/lib/utils/item";
 import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
 
-const title = css({ textStyle: "displayMd", color: "text.primary", marginBottom: "4" });
 const ctrlBtn = css({ color: "text.secondary", fontWeight: 600, cursor: "pointer" });
 
 const MATERIALS = ["면", "폴리에스터", "울", "아크릴", "나일론", "린넨", "데님", "가죽", "캐시미어"];
@@ -216,10 +216,8 @@ export function ClosetView() {
   if (itemsLoading || catsLoading) {
     return (
       <>
-        <h1 className={title}>Closet</h1>
-        <div className={css({ marginTop: "4" })}>
-          <GridSkeleton />
-        </div>
+        <PageHeader title="Closet" />
+        <GridSkeleton />
       </>
     );
   }
@@ -227,7 +225,7 @@ export function ClosetView() {
   if (items.length === 0) {
     return (
       <>
-        <h1 className={title}>Closet</h1>
+        <PageHeader title="Closet" />
         <p className={css({ marginTop: "12", textAlign: "center", fontSize: "sm", color: "text.tertiary" })}>
           아직 등록한 아이템이 없어요. + 버튼으로 추가해보세요.
         </p>
@@ -237,7 +235,7 @@ export function ClosetView() {
 
   return (
     <>
-      <h1 className={title}>Closet</h1>
+      <PageHeader title="Closet" />
 
       {/* 검색 + 필터 */}
       <div className={css({ display: "flex", gap: "2", marginBottom: "3" })}>

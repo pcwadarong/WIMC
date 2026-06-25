@@ -1,35 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
-import { LayoutGrid, Check, Heart } from "lucide-react";
+import { Check } from "lucide-react";
 import { primaryImageUrl } from "@/components/items/ItemCard";
+import { FavoriteHeart } from "@/components/ui/FavoriteHeart";
+import { Thumb } from "@/components/ui/Thumb";
 import type { Item, Outfit } from "@/types";
-import { css, cx } from "@/styled-system/css";
-
-const heartBtn = css({
-  position: "absolute",
-  bottom: "2",
-  right: "2",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "30px",
-  height: "30px",
-  bg: "transparent",
-  color: "like",
-  cursor: "pointer",
-  zIndex: 1,
-});
-
-const wrap = css({
-  position: "relative",
-  aspectRatio: "1",
-  borderRadius: "lg",
-  overflow: "hidden",
-  bg: "surface.muted",
-  boxShadow: "card", // 잉크 아웃라인
-});
-
-const wrapSelected = css({ boxShadow: "0 0 0 2.5px token(colors.brown.dark)" });
+import { css } from "@/styled-system/css";
 
 interface OutfitCardProps {
   outfit: Outfit;
@@ -38,6 +13,7 @@ interface OutfitCardProps {
   selected?: boolean;
   onSelect?: (id: string) => void;
   onToggleFavorite?: (id: string, next: boolean) => void;
+  heartSize?: number;
 }
 
 export function OutfitCard({
@@ -47,6 +23,7 @@ export function OutfitCard({
   selected,
   onSelect,
   onToggleFavorite,
+  heartSize = 24,
 }: OutfitCardProps) {
   const ids = outfit.item_ids ?? [];
   const images = ids
@@ -56,54 +33,50 @@ export function OutfitCard({
     .filter(Boolean) as string[];
   const cells = images.slice(0, 4);
 
+  const collage =
+    cells.length > 0 ? (
+      <div
+        className={css({
+          position: "absolute",
+          inset: 0,
+          display: "grid",
+          gridTemplateColumns: cells.length > 1 ? "1fr 1fr" : "1fr",
+          gridAutoRows: "1fr",
+          gap: "1px",
+        })}
+      >
+        {cells.map((url, i) => (
+          <div
+            key={i}
+            className={css({
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              bg: "surface",
+              gridColumn: cells.length === 3 && i === 0 ? "span 2" : undefined,
+            })}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className={css({ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" })}
+            />
+          </div>
+        ))}
+      </div>
+    ) : undefined;
+
   const visual = (
     <>
-      <div className={cx(wrap, selectionMode && selected && wrapSelected)}>
-        <div
-          className={css({
-            position: "absolute",
-            inset: 0,
-            display: "grid",
-            gridTemplateColumns: cells.length > 1 ? "1fr 1fr" : "1fr",
-            gridAutoRows: "1fr",
-            gap: "1px",
-          })}
-        >
-          {cells.length > 0 ? (
-            cells.map((url, i) => (
-              <div
-                key={i}
-                className={css({
-                  position: "relative",
-                  width: "100%",
-                  height: "100%",
-                  bg: "surface",
-                  gridColumn: cells.length === 3 && i === 0 ? "span 2" : undefined,
-                })}
-              >
-                <Image
-                  src={url}
-                  alt=""
-                  fill
-                  sizes="(max-width: 430px) 50vw, 215px"
-                  className={css({ objectFit: "cover" })}
-                />
-              </div>
-            ))
-          ) : (
-            <div
-              className={css({
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "text.tertiary",
-              })}
-            >
-              <LayoutGrid size={28} strokeWidth={1.5} />
-            </div>
-          )}
-        </div>
-
+      <Thumb
+        radius="lg"
+        outlined
+        selected={selectionMode && selected}
+        content={collage}
+      >
         {selectionMode && (
           <span
             className={css({
@@ -127,29 +100,14 @@ export function OutfitCard({
           </span>
         )}
 
-        {!selectionMode &&
-          (onToggleFavorite ? (
-            <button
-              type="button"
-              aria-label={outfit.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
-              aria-pressed={outfit.is_favorite}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite(outfit.id, !outfit.is_favorite);
-              }}
-              className={heartBtn}
-            >
-              <Heart size={24} fill={outfit.is_favorite ? "currentColor" : "none"} />
-            </button>
-          ) : (
-            outfit.is_favorite && (
-              <span className={heartBtn}>
-                <Heart size={24} fill="currentColor" />
-              </span>
-            )
-          ))}
-      </div>
+        {!selectionMode && (
+          <FavoriteHeart
+            active={outfit.is_favorite}
+            size={heartSize}
+            onToggle={onToggleFavorite ? (next) => onToggleFavorite(outfit.id, next) : undefined}
+          />
+        )}
+      </Thumb>
 
       <div className={css({ marginTop: "2" })}>
         <p

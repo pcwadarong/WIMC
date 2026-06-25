@@ -41,7 +41,7 @@ export function TripsList() {
             padding: "4",
           })}
         >
-          <p className={css({ textStyle: "displaySm", color: "text.primary" })}>
+          <p className={css({ fontSize: "lg", fontWeight: 700, letterSpacing: "-0.01em", color: "text.primary" })}>
             {t.name}
           </p>
           <div className={css({ display: "flex", gap: "4", marginTop: "1", fontSize: "sm", color: "text.secondary" })}>

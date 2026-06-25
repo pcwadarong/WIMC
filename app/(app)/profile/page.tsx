@@ -1,13 +1,11 @@
 import { ProfileScreen } from "@/components/profile/ProfileScreen";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { css } from "@/styled-system/css";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function ProfilePage() {
   return (
     <PageContainer>
-      <h1 className={css({ textStyle: "displayMd", color: "text.primary", marginBottom: "5" })}>
-        Profile
-      </h1>
+      <PageHeader title="Profile" />
       <ProfileScreen />
     </PageContainer>
   );

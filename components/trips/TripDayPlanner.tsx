@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/Toast";
+import { Thumb } from "@/components/ui/Thumb";
 import { setTripDay } from "@/app/(app)/trips/actions";
 import type { OutfitThumb } from "@/components/calendar/DayLogForm";
 import { css } from "@/styled-system/css";
@@ -65,28 +66,20 @@ export function TripDayPlanner({
               padding: "3",
             })}
           >
-            <div
-              className={css({
-                position: "relative",
-                width: "52px",
-                height: "52px",
-                borderRadius: "sm",
-                overflow: "hidden",
-                bg: "surface.muted",
-                flexShrink: 0,
-              })}
-            >
-              {thumb && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={thumb} alt="" className={css({ width: "100%", height: "100%", objectFit: "cover" })} />
-              )}
-            </div>
+            <Thumb
+              src={thumb}
+              alt={chosen?.name ?? ""}
+              radius="sm"
+              outlined
+              iconSize={20}
+              className={css({ width: "52px", flexShrink: 0 })}
+            />
             <div className={css({ flex: 1, minWidth: 0 })}>
               <p className={css({ fontSize: "sm", fontWeight: 600, color: "text.primary", marginBottom: "1" })}>
                 Day {i + 1} · {label(d)}
               </p>
               {readOnly ? (
-                <p className={css({ fontSize: "sm", color: chosen ? "text.secondary" : "text.tertiary" })}>
+                <p className={css({ fontSize: "sm", fontWeight: chosen ? 400 : 500, color: chosen ? "text.primary" : "text.secondary" })}>
                   {chosen ? chosen.name : "코디 미정"}
                 </p>
               ) : (

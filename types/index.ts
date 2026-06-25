@@ -213,7 +213,7 @@ export interface DailyLog {
   date: DateString;
   outfit_id: UUID | null;
   item_ids: UUID[] | null; // 즉석 조합 (저장된 코디 없이)
-  photo_url: string | null;
+  photos: string[] | null; // 착샷 등 사진 (복수, 최대 5)
   weather: Weather | null;
   memo: string | null;
   created_at: Timestamp;

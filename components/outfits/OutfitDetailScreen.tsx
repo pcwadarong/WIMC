@@ -1,21 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Pencil, Trash2 } from "lucide-react";
 import { ItemCard } from "@/components/items/ItemCard";
-import { DeleteOutfitButton } from "@/components/outfits/DeleteOutfitButton";
 import { OutfitFavoriteToggle } from "@/components/outfits/OutfitFavoriteToggle";
 import { TopBar } from "@/components/layout/TopBar";
+import { OverflowMenu } from "@/components/ui/OverflowMenu";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { iconAction } from "@/components/ui/styles";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
+import { deleteOutfit } from "@/app/(app)/outfits/actions";
 import { useOutfit, useItems } from "@/lib/queries/hooks";
 import { indexById } from "@/lib/utils/item";
 import type { Item } from "@/types";
 import { css } from "@/styled-system/css";
 
 export function OutfitDetailScreen({ id }: { id: string }) {
+  const router = useRouter();
   const { data: outfit, isLoading } = useOutfit(id);
   const { data: items = [] } = useItems();
+  const del = useConfirmDelete({
+    title: "이 코디를 삭제할까요?",
+    action: () => deleteOutfit(id),
+    invalidateKeys: [["outfits"]],
+    redirect: "/outfits",
+  });
 
   if (isLoading) {
     return (
@@ -53,23 +61,24 @@ export function OutfitDetailScreen({ id }: { id: string }) {
         action={
           <>
             <OutfitFavoriteToggle id={outfit.id} initial={outfit.is_favorite} />
-            <Link href={`/outfits/${outfit.id}/edit`} aria-label="수정" className={iconAction}>
-              <Pencil size={19} />
-            </Link>
-            <DeleteOutfitButton id={outfit.id} />
+            <OverflowMenu
+              items={[
+                { label: "수정", icon: <Pencil size={17} />, onClick: () => router.push(`/outfits/${outfit.id}/edit`) },
+                { label: "삭제", icon: <Trash2 size={17} />, danger: true, onClick: del.run },
+              ]}
+            />
           </>
         }
       />
-      <div className={css({ paddingX: "5", paddingBottom: "10", paddingTop: "2" })}>
+      <div className={css({ paddingX: "5", paddingBottom: "10", paddingTop: "4" })}>
         {outfit.memo && (
-          <p className={css({ fontSize: "sm", color: "text.secondary" })}>
+          <p className={css({ fontSize: "sm", color: "text.secondary", marginBottom: "5" })}>
             {outfit.memo}
           </p>
         )}
 
         <div
           className={css({
-            marginTop: outfit.memo ? "5" : "1",
             display: "grid",
             gridTemplateColumns: "repeat(2, 1fr)",
             gap: "4",

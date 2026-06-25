@@ -21,9 +21,9 @@ export function TopBar({ title, back, action }: TopBarProps) {
         position: "sticky",
         top: 0,
         zIndex: 40,
-        display: "grid",
-        gridTemplateColumns: "44px 1fr auto",
+        display: "flex",
         alignItems: "center",
+        justifyContent: "space-between",
         height: "52px",
         paddingX: "2",
         bg: "bg",
@@ -50,15 +50,24 @@ export function TopBar({ title, back, action }: TopBarProps) {
           <ChevronLeft size={24} />
         </button>
       ) : (
-        <span />
+        <span className={css({ width: "44px", flexShrink: 0 })} />
       )}
 
+      {/* 제목은 항상 화면 정중앙 — 좌우 액션 폭과 무관 (넘치면 말줄임) */}
       <h1
         className={css({
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          maxWidth: "calc(100% - 160px)",
           textAlign: "center",
           textStyle: "lg",
           fontWeight: 600,
           color: "text.primary",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
         })}
       >
         {title}

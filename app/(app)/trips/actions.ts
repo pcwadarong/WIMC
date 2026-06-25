@@ -101,7 +101,7 @@ export async function setTripDay(
   // 캘린더 동기화: 여행 일차 코디 → 그 날짜 daily_log.outfit_id (수동 사진/메모는 보존)
   const { data: log } = await supabase
     .from("daily_logs")
-    .select("id, photo_url, item_ids, memo")
+    .select("id, photos, item_ids, memo")
     .eq("user_id", user.id)
     .eq("date", date)
     .maybeSingle();
@@ -117,7 +117,9 @@ export async function setTripDay(
   } else if (log) {
     // 해제: 코디만 있던 기록이면 삭제, 다른 내용(사진·조합·메모) 있으면 코디만 비움
     const otherContent =
-      !!log.photo_url || ((log.item_ids as string[] | null)?.length ?? 0) > 0 || !!log.memo;
+      ((log.photos as string[] | null)?.length ?? 0) > 0 ||
+      ((log.item_ids as string[] | null)?.length ?? 0) > 0 ||
+      !!log.memo;
     if (otherContent) {
       await supabase.from("daily_logs").update({ outfit_id: null }).eq("id", log.id);
     } else {
