@@ -195,6 +195,41 @@ export function StatsView() {
         </section>
       )}
 
+      {/* 이번 달 착용 키워드 (실제 입은 옷 기반) */}
+      {s.wornKeywords.length > 0 && (
+        <section className={card}>
+          <h2 className={sectionTitle}>{monthLabel} 착용 키워드</h2>
+          <p className={css({ marginTop: "-2", marginBottom: "3", fontSize: "xs", color: "text.tertiary" })}>
+            이번 달 실제로 입은 옷 기준 (마이의 선호 키워드와 비교해보세요)
+          </p>
+          <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
+            {s.wornKeywords.map((k) => (
+              <span
+                key={k.label}
+                className={css({
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "1.5",
+                  height: "32px",
+                  paddingX: "3",
+                  borderRadius: "full",
+                  borderWidth: "1.5px",
+                  borderStyle: "solid",
+                  borderColor: "brown.dark",
+                  bg: "accent.lavender",
+                  fontSize: "sm",
+                  fontWeight: 600,
+                  color: "text.primary",
+                })}
+              >
+                {k.label}
+                <span className={css({ fontSize: "xs", color: "text.secondary" })}>{k.count}</span>
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 카테고리 */}
       <section className={card}>
         <h2 className={sectionTitle}>Categories</h2>

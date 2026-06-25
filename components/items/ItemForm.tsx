@@ -16,6 +16,7 @@ import { MaterialInput } from "@/components/items/MaterialInput";
 import { createClient } from "@/lib/supabase/client";
 import { createItem, updateItem } from "@/app/(app)/closet/actions";
 import { SEASON_LABELS, ITEM_STATUS_LABELS } from "@/types";
+import { STYLE_KEYWORDS } from "@/lib/constants/keywords";
 import type {
   CategoryNode,
   ColorValue,
@@ -121,6 +122,7 @@ export function ItemForm({
   );
   const [purchaseDate, setPurchaseDate] = useState(item?.purchase_date ?? "");
   const [sizeInfo, setSizeInfo] = useState<SizeInfo>(item?.size_info ?? {});
+  const [keywords, setKeywords] = useState<string[]>(item?.keywords ?? []);
 
   const [submitting, setSubmitting] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -185,6 +187,7 @@ export function ItemForm({
         images: built,
         is_favorite: item?.is_favorite ?? false,
         status,
+        keywords,
       };
 
       const result = item
@@ -305,6 +308,26 @@ export function ItemForm({
                 onClick={() => { setStatus(s); touch(); }}
               >
                 {ITEM_STATUS_LABELS[s]}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <span className={fieldLabel}>스타일 키워드</span>
+          <div className={css({ display: "flex", gap: "2", flexWrap: "wrap" })}>
+            {STYLE_KEYWORDS.map((k) => (
+              <Chip
+                key={k}
+                active={keywords.includes(k)}
+                onClick={() => {
+                  setKeywords((prev) =>
+                    prev.includes(k) ? prev.filter((v) => v !== k) : [...prev, k],
+                  );
+                  touch();
+                }}
+              >
+                {k}
               </Chip>
             ))}
           </div>

@@ -38,6 +38,7 @@ export interface Stats {
   byColor: CountRow[];
   byBrand: BrandRow[]; // 이번 달
   topWorn: WearRow[]; // 이번 달 많이 입은 Top3
+  wornKeywords: CountRow[]; // 이번 달 입은 옷 기반 키워드
   costPerWear: CostPerWearRow[];
   monthlySpend: MonthSpend[];
 }
@@ -122,6 +123,17 @@ export async function getStats(): Promise<Stats> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
 
+  // 이번 달 입은 옷 기반 키워드 (옷 단위 집계)
+  const kwCounts: Record<string, number> = {};
+  for (const id of Object.keys(wearMonth)) {
+    const it = itemsById[id];
+    for (const k of it?.keywords ?? []) kwCounts[k] = (kwCounts[k] ?? 0) + 1;
+  }
+  const wornKeywords = Object.entries(kwCounts)
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
   // 착용당 비용 (가성비: 착용한 옷 중 cpw 낮은 순) — 전체 기준
   const costPerWear = items
     .filter((it) => it.purchase_price && wear[it.id] > 0)
@@ -156,6 +168,7 @@ export async function getStats(): Promise<Stats> {
     byColor,
     byBrand,
     topWorn,
+    wornKeywords,
     costPerWear,
     monthlySpend,
   };

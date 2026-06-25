@@ -159,6 +159,7 @@ export interface Item {
   material: string | null;
   season: Season | null;
   size_info: SizeInfo | null;
+  keywords: string[] | null;
 
   is_favorite: boolean;
   is_archived: boolean;

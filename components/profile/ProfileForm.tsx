@@ -24,6 +24,7 @@ import { ProfilePhotos } from "@/components/profile/ProfilePhotos";
 import { updateProfile } from "@/app/(app)/profile/actions";
 import { buildStyleAnalysisPrompt } from "@/lib/profile-note";
 import { CITY_GROUPS, cityLabel, findCity } from "@/lib/constants/cities";
+import { STYLE_KEYWORDS } from "@/lib/constants/keywords";
 import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import type { Profile, ProfilePhotos as Photos, UserLocation } from "@/types";
 import { css, cx } from "@/styled-system/css";
@@ -35,21 +36,6 @@ const subLabel = css({
   fontWeight: 500,
   color: "text.secondary",
 });
-
-const STYLE_KEYWORDS = [
-  "미니멀",
-  "캐주얼",
-  "클래식",
-  "스트릿",
-  "페미닌",
-  "모던",
-  "빈티지",
-  "스포티",
-  "러블리",
-  "시크",
-  "내추럴",
-  "프렌치",
-];
 
 const card = cx(cardSurface, css({ padding: "5" }));
 
@@ -230,7 +216,7 @@ export function ProfileForm({ initial }: { initial: Profile | null }) {
             </div>
 
             <div>
-              <span className={subLabel}>스타일 키워드</span>
+              <span className={subLabel}>선호 스타일 키워드</span>
               <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
                 {STYLE_KEYWORDS.map((k) => (
                   <Chip

@@ -19,6 +19,7 @@ export interface ItemInput {
   images: ItemImage[];
   is_favorite: boolean;
   status: ItemStatus;
+  keywords: string[];
 }
 
 export type ActionResult = { ok: true; id?: string } | { error: string };
@@ -50,6 +51,7 @@ export async function createItem(input: ItemInput): Promise<ActionResult> {
       images: input.images,
       is_favorite: input.is_favorite,
       status: input.status,
+      keywords: input.keywords,
     })
     .select("id")
     .single();
@@ -88,6 +90,7 @@ export async function updateItem(
       size_info: input.size_info,
       images: input.images,
       status: input.status,
+      keywords: input.keywords,
     })
     .eq("id", id)
     .eq("user_id", user.id);
