@@ -211,6 +211,7 @@ export interface DailyLog {
   user_id: UUID;
   date: DateString;
   outfit_id: UUID | null;
+  item_ids: UUID[] | null; // 즉석 조합 (저장된 코디 없이)
   photo_url: string | null;
   weather: Weather | null;
   memo: string | null;

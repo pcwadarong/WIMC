@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 export interface LogInput {
   date: string; // YYYY-MM-DD
   outfit_id: string | null;
+  item_ids: string[];
   photo_url: string | null;
   memo: string | null;
 }
@@ -19,14 +20,15 @@ export async function upsertLog(input: LogInput): Promise<ActionResult> {
   } = await supabase.auth.getUser();
   if (!user) return { error: "로그인이 필요합니다." };
 
-  if (!input.outfit_id && !input.photo_url)
-    return { error: "코디를 선택하거나 사진을 올려주세요." };
+  if (!input.outfit_id && !input.photo_url && input.item_ids.length === 0)
+    return { error: "사진·즉석 조합·저장된 코디 중 하나를 골라주세요." };
 
   const { error } = await supabase.from("daily_logs").upsert(
     {
       user_id: user.id,
       date: input.date,
       outfit_id: input.outfit_id,
+      item_ids: input.item_ids,
       photo_url: input.photo_url,
       memo: input.memo?.trim() || null,
     },

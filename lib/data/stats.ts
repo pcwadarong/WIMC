@@ -108,9 +108,11 @@ export async function getStats(): Promise<Stats> {
   const wear: Record<string, number> = {};
   const wearMonth: Record<string, number> = {};
   for (const log of logs) {
-    if (!log.outfit_id) continue;
-    const o = outfitById.get(log.outfit_id);
-    for (const iid of o?.item_ids ?? []) {
+    // 저장된 코디 또는 즉석 조합(item_ids)
+    const iids = log.outfit_id
+      ? outfitById.get(log.outfit_id)?.item_ids ?? []
+      : log.item_ids ?? [];
+    for (const iid of iids) {
       if (!itemsById[iid]) continue;
       wear[iid] = (wear[iid] ?? 0) + 1;
       if (log.date.startsWith(ym)) wearMonth[iid] = (wearMonth[iid] ?? 0) + 1;

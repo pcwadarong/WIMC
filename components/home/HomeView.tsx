@@ -41,9 +41,10 @@ export function HomeView() {
   let yName: string | null = null;
   if (yLog?.photo_url) {
     yThumb = yLog.photo_url;
-  } else if (yLog?.outfit_id) {
-    const o = outfits.find((x) => x.id === yLog.outfit_id);
-    const first = (o?.item_ids ?? []).map((id) => itemsById[id]).find(Boolean);
+  } else if (yLog?.outfit_id || (yLog?.item_ids?.length ?? 0) > 0) {
+    const o = yLog?.outfit_id ? outfits.find((x) => x.id === yLog.outfit_id) : undefined;
+    const ids = o ? o.item_ids ?? [] : yLog?.item_ids ?? [];
+    const first = ids.map((id) => itemsById[id]).find(Boolean);
     yThumb = first ? primaryImageUrl(first) : null;
     yName = o?.name ?? null;
   }

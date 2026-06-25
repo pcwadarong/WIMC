@@ -69,24 +69,30 @@ export async function getItemWears(
     .from("outfits")
     .select("id, item_ids")
     .eq("user_id", user.id);
-  const outfitIds = (outfits ?? [])
-    .filter((o) => ((o.item_ids as string[] | null) ?? []).includes(id))
-    .map((o) => o.id as string);
-  if (outfitIds.length === 0) return { total: 0, month: 0 };
+  const outfitIds = new Set(
+    (outfits ?? [])
+      .filter((o) => ((o.item_ids as string[] | null) ?? []).includes(id))
+      .map((o) => o.id as string),
+  );
 
+  // 기록 중: 코디에 이 옷이 들었거나(outfit_id) 즉석 조합(item_ids)에 든 경우
   const { data: logs } = await supabase
     .from("daily_logs")
-    .select("date")
-    .eq("user_id", user.id)
-    .in("outfit_id", outfitIds);
+    .select("date, outfit_id, item_ids")
+    .eq("user_id", user.id);
 
   const now = new Date();
   const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const rows = (logs as { date: string }[] | null) ?? [];
-  return {
-    total: rows.length,
-    month: rows.filter((r) => r.date?.startsWith(ym)).length,
-  };
+  let total = 0;
+  let month = 0;
+  for (const l of (logs as { date: string; outfit_id: string | null; item_ids: string[] | null }[] | null) ?? []) {
+    const worn =
+      (l.outfit_id && outfitIds.has(l.outfit_id)) || (l.item_ids ?? []).includes(id);
+    if (!worn) continue;
+    total += 1;
+    if (l.date?.startsWith(ym)) month += 1;
+  }
+  return { total, month };
 }
 
 /** 특정 월의 등록 수 / 지출 합계 (필요한 컬럼만, 해당 월만 조회 — 전체 스캔 회피) */

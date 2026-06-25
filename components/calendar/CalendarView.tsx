@@ -32,8 +32,10 @@ export function CalendarView() {
   const { data: logs = [] } = useMonthLogs(ym);
   const { data: summary } = useMonthItemSummary(ym);
 
-  // 썸네일은 outfit 기반 기록이 있을 때만 outfits/items 조회
-  const needsOutfitThumbs = logs.some((l) => !l.photo_url && l.outfit_id);
+  // 썸네일은 코디/즉석조합 기반 기록이 있을 때만 outfits/items 조회
+  const needsOutfitThumbs = logs.some(
+    (l) => !l.photo_url && (l.outfit_id || (l.item_ids?.length ?? 0) > 0),
+  );
   const { data: outfits = [] } = useOutfits({ enabled: needsOutfitThumbs });
   const { data: items = [] } = useItems(undefined, { enabled: needsOutfitThumbs });
 
@@ -47,12 +49,11 @@ export function CalendarView() {
 
   const thumb = (log: DailyLog): string | null => {
     if (log.photo_url) return log.photo_url;
-    if (log.outfit_id) {
-      const o = outfitsById[log.outfit_id];
-      const firstItem = (o?.item_ids ?? []).map((id) => itemsById[id]).find(Boolean);
-      return firstItem ? primaryImageUrl(firstItem) : null;
-    }
-    return null;
+    const ids = log.outfit_id
+      ? outfitsById[log.outfit_id]?.item_ids ?? []
+      : log.item_ids ?? [];
+    const firstItem = ids.map((id) => itemsById[id]).find(Boolean);
+    return firstItem ? primaryImageUrl(firstItem) : null;
   };
 
   const firstWeekday = (new Date(y, m - 1, 1).getDay() + 6) % 7;
