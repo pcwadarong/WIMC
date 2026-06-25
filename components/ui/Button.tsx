@@ -35,8 +35,11 @@ const variants: Record<Variant, string> = {
     _hover: { bg: "brown.mid" },
   }),
   secondary: css({
-    bg: "surface.muted",
+    bg: "surface",
     color: "text.primary",
+    borderWidth: "1.5px",
+    borderStyle: "solid",
+    borderColor: "brown.dark",
     _hover: { bg: "accent.green" },
   }),
   ghost: css({

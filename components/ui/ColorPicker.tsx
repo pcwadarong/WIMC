@@ -11,12 +11,12 @@ interface ColorPickerProps {
   onChange: (colors: ColorValue[]) => void;
 }
 
-const row = css({ display: "flex", flexWrap: "wrap", gap: "2.5" });
+const row = css({ display: "flex", flexWrap: "wrap", gap: "2" });
 
 // 동그라미 스와치 (레퍼런스 color radio selector). 선택 시 블랙 링.
 const dot = css({
-  width: "36px",
-  height: "36px",
+  width: "28px",
+  height: "28px",
   borderRadius: "full",
   borderWidth: "1px",
   borderStyle: "solid",

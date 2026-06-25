@@ -14,11 +14,13 @@ export function TripDayPlanner({
   dates,
   initial,
   outfits,
+  readOnly = false,
 }: {
   tripId: string;
   dates: string[];
   initial: Record<string, string | null>;
   outfits: OutfitThumb[];
+  readOnly?: boolean;
 }) {
   const queryClient = useQueryClient();
   const { show } = useToast();
@@ -44,7 +46,8 @@ export function TripDayPlanner({
     <div className={css({ display: "flex", flexDirection: "column", gap: "3" })}>
       {dates.map((d, i) => {
         const oid = assign[d] ?? "";
-        const thumb = outfits.find((o) => o.id === oid)?.thumb ?? null;
+        const chosen = outfits.find((o) => o.id === oid);
+        const thumb = chosen?.thumb ?? null;
         return (
           <div
             key={d}
@@ -78,29 +81,35 @@ export function TripDayPlanner({
               <p className={css({ fontSize: "sm", fontWeight: 600, color: "text.primary", marginBottom: "1" })}>
                 Day {i + 1} · {label(d)}
               </p>
-              <select
-                value={oid}
-                onChange={(e) => change(d, e.target.value || null)}
-                className={css({
-                  width: "100%",
-                  height: "40px",
-                  paddingX: "2",
-                  bg: "surface.muted",
-                  borderRadius: "sm",
-                  fontSize: "sm",
-                  color: "text.primary",
-                  appearance: "none",
-                  cursor: "pointer",
-                  _focusVisible: { outline: "none" },
-                })}
-              >
-                <option value="">코디 선택 안 함</option>
-                {outfits.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name}
-                  </option>
-                ))}
-              </select>
+              {readOnly ? (
+                <p className={css({ fontSize: "sm", color: chosen ? "text.secondary" : "text.tertiary" })}>
+                  {chosen ? chosen.name : "코디 미정"}
+                </p>
+              ) : (
+                <select
+                  value={oid}
+                  onChange={(e) => change(d, e.target.value || null)}
+                  className={css({
+                    width: "100%",
+                    height: "40px",
+                    paddingX: "2",
+                    bg: "surface.muted",
+                    borderRadius: "sm",
+                    fontSize: "sm",
+                    color: "text.primary",
+                    appearance: "none",
+                    cursor: "pointer",
+                    _focusVisible: { outline: "none" },
+                  })}
+                >
+                  <option value="">코디 선택 안 함</option>
+                  {outfits.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
         );

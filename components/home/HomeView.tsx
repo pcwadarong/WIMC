@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { OutfitCard } from "@/components/outfits/OutfitCard";
 import { TodayPanel } from "@/components/home/TodayPanel";
+import { SeeMore } from "@/components/ui/SeeMore";
 import {
   useItems,
   useOutfits,
@@ -134,9 +135,7 @@ export function HomeView() {
             <h2 className={css({ textStyle: "displaySm", color: "text.primary" })}>
               Recent
             </h2>
-            <Link href="/outfits" className={css({ fontSize: "sm", color: "text.secondary" })}>
-              전체 보기
-            </Link>
+            <SeeMore href="/outfits">전체 보기</SeeMore>
           </div>
           <div
             className={css({

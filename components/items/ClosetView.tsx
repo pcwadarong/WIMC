@@ -69,6 +69,12 @@ export function ClosetView() {
   const [sort, setSort] = useState<ItemSort>("recent");
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  // 필터 시트는 드래프트로 — '보기' 누를 때만 실제 적용
+  const [dColors, setDColors] = useState<string[]>([]);
+  const [dMaterials, setDMaterials] = useState<string[]>([]);
+  const [dSeasons, setDSeasons] = useState<Season[]>([]);
+  const [dWish, setDWish] = useState<"exclude" | "all" | "only">("exclude");
+
   const queryClient = useQueryClient();
   const { show } = useToast();
   const confirm = useConfirm();
@@ -161,12 +167,50 @@ export function ClosetView() {
   const toggle = <T,>(list: T[], set: (v: T[]) => void, v: T) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
-  const resetSheet = () => {
-    setColors([]);
-    setMaterials([]);
-    setSeasons([]);
-    setWishFilter("exclude");
+  // 시트 열 때 현재 적용값을 드래프트로 동기화
+  const openSheet = () => {
+    setDColors(colors);
+    setDMaterials(materials);
+    setDSeasons(seasons);
+    setDWish(wishFilter);
+    setSheetOpen(true);
   };
+  const applySheet = () => {
+    setColors(dColors);
+    setMaterials(dMaterials);
+    setSeasons(dSeasons);
+    setWishFilter(dWish);
+    setSheetOpen(false);
+  };
+  const resetSheet = () => {
+    setDColors([]);
+    setDMaterials([]);
+    setDSeasons([]);
+    setDWish("exclude");
+  };
+
+  // 드래프트 기준 미리보기 개수
+  const draftCount = useMemo(
+    () =>
+      items.filter((it) => {
+        if (dWish === "exclude" && it.status === "wishlist") return false;
+        if (dWish === "only" && it.status !== "wishlist") return false;
+        if (cat) {
+          const pn = it.category_id ? categoryMap[it.category_id]?.parentName : undefined;
+          if (pn !== cat) return false;
+        }
+        if (fav && !it.is_favorite) return false;
+        if (search.trim() && !it.name.toLowerCase().includes(search.trim().toLowerCase()))
+          return false;
+        if (dColors.length && !(it.colors ?? []).some((c) => dColors.includes(c.label)))
+          return false;
+        if (dMaterials.length && !dMaterials.some((m) => (it.material ?? "").includes(m)))
+          return false;
+        if (dSeasons.length && !(it.season && dSeasons.includes(it.season))) return false;
+        return true;
+      }).length,
+    [items, dWish, cat, fav, search, dColors, dMaterials, dSeasons, categoryMap],
+  );
 
   if (itemsLoading || catsLoading) {
     return (
@@ -236,7 +280,7 @@ export function ClosetView() {
         </div>
         <button
           type="button"
-          onClick={() => setSheetOpen(true)}
+          onClick={openSheet}
           className={css({
             display: "inline-flex",
             alignItems: "center",
@@ -415,8 +459,8 @@ export function ClosetView() {
             <Button type="button" variant="secondary" onClick={resetSheet} className={css({ flex: 1 })}>
               초기화
             </Button>
-            <Button type="button" onClick={() => setSheetOpen(false)} className={css({ flex: 1 })}>
-              {sorted.length}개 보기
+            <Button type="button" onClick={applySheet} className={css({ flex: 1 })}>
+              {draftCount}개 보기
             </Button>
           </div>
         }
@@ -433,8 +477,8 @@ export function ClosetView() {
                 <button
                   key={v}
                   type="button"
-                  className={chipClass({ active: wishFilter === v, size: "sm", color: "purple" })}
-                  onClick={() => setWishFilter(v)}
+                  className={chipClass({ active: dWish === v, size: "sm", color: "purple" })}
+                  onClick={() => setDWish(v)}
                 >
                   {label}
                 </button>
@@ -450,8 +494,8 @@ export function ClosetView() {
                   <button
                     key={c.label}
                     type="button"
-                    className={chipClass({ active: colors.includes(c.label), size: "sm" })}
-                    onClick={() => toggle(colors, setColors, c.label)}
+                    className={chipClass({ active: dColors.includes(c.label), size: "sm" })}
+                    onClick={() => toggle(dColors, setDColors, c.label)}
                   >
                     <span
                       className={css({ width: "14px", height: "14px", borderRadius: "full", borderWidth: "1px", borderStyle: "solid", borderColor: "border" })}
@@ -468,7 +512,7 @@ export function ClosetView() {
             <p className={sheetSectionTitle}>소재</p>
             <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
               {MATERIALS.map((m) => (
-                <button key={m} type="button" className={chipClass({ active: materials.includes(m), size: "sm" })} onClick={() => toggle(materials, setMaterials, m)}>
+                <button key={m} type="button" className={chipClass({ active: dMaterials.includes(m), size: "sm" })} onClick={() => toggle(dMaterials, setDMaterials, m)}>
                   {m}
                 </button>
               ))}
@@ -479,7 +523,7 @@ export function ClosetView() {
             <p className={sheetSectionTitle}>시즌</p>
             <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
               {SEASONS.map((s) => (
-                <button key={s} type="button" className={chipClass({ active: seasons.includes(s), size: "sm" })} onClick={() => toggle(seasons, setSeasons, s)}>
+                <button key={s} type="button" className={chipClass({ active: dSeasons.includes(s), size: "sm" })} onClick={() => toggle(dSeasons, setDSeasons, s)}>
                   {SEASON_LABELS[s]}
                 </button>
               ))}

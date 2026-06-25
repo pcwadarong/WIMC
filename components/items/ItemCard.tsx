@@ -41,10 +41,15 @@ const heartBtn = css({
   width: "30px",
   height: "30px",
   borderRadius: "full",
-  bg: "whiteMuted",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+  borderWidth: "1.5px",
+  borderStyle: "solid",
+  borderColor: "brown.dark",
+  bg: "transparent",
+  color: "brown.dark",
   cursor: "pointer",
 });
+// 즐겨찾기일 때만 아이콘 배경 보라색
+const heartActive = css({ bg: "accent.lavender" });
 
 export function ItemCard({
   item,
@@ -115,18 +120,14 @@ export function ItemCard({
                 e.stopPropagation();
                 onToggleFavorite(item.id, !item.is_favorite);
               }}
-              className={heartBtn}
+              className={cx(heartBtn, item.is_favorite && heartActive)}
             >
-              <Heart
-                size={17}
-                className={css({ color: "like" })}
-                fill={item.is_favorite ? "currentColor" : "none"}
-              />
+              <Heart size={16} fill={item.is_favorite ? "currentColor" : "none"} />
             </button>
           ) : (
             item.is_favorite && (
-              <span className={heartBtn}>
-                <Heart size={17} className={css({ color: "like" })} fill="currentColor" />
+              <span className={cx(heartBtn, heartActive)}>
+                <Heart size={16} fill="currentColor" />
               </span>
             )
           ))}

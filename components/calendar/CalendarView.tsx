@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Plane } from "lucide-react";
+import { SeeMore } from "@/components/ui/SeeMore";
 import { primaryImageUrl } from "@/components/items/ItemCard";
 import { Fab } from "@/components/ui/Fab";
 import {
@@ -241,29 +242,7 @@ export function CalendarView() {
           <h2 className={css({ textStyle: "displaySm", color: "text.primary" })}>
             This Month
           </h2>
-          <Link
-            href="/stats"
-            className={css({
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "1",
-              flexShrink: 0,
-              height: "30px",
-              paddingX: "3",
-              borderRadius: "full",
-              borderWidth: "1.5px",
-              borderStyle: "solid",
-              borderColor: "brown.dark",
-              bg: "surface",
-              fontSize: "xs",
-              fontWeight: 600,
-              color: "text.primary",
-              _hover: { bg: "surface.muted" },
-            })}
-          >
-            전체 분석
-            <ChevronRight size={13} />
-          </Link>
+          <SeeMore href="/stats">전체 분석</SeeMore>
         </div>
         <div className={css({ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2" })}>
           {[

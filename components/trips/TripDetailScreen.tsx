@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Pencil, Check } from "lucide-react";
 import { TripDayPlanner } from "@/components/trips/TripDayPlanner";
 import { DeleteTripButton } from "@/components/trips/DeleteTripButton";
 import { TopBar } from "@/components/layout/TopBar";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { iconAction } from "@/components/ui/styles";
 import { useTrip, useOutfits, useItems } from "@/lib/queries/hooks";
 import { buildOutfitThumbs, indexById } from "@/lib/utils/item";
 import { css } from "@/styled-system/css";
@@ -26,6 +28,7 @@ export function TripDetailScreen({ id }: { id: string }) {
   const { data: result, isLoading } = useTrip(id);
   const { data: outfits = [] } = useOutfits();
   const { data: items = [] } = useItems();
+  const [editing, setEditing] = useState(false);
 
   const outfitThumbs = useMemo(
     () => buildOutfitThumbs(outfits, indexById(items)),
@@ -63,7 +66,22 @@ export function TripDetailScreen({ id }: { id: string }) {
 
   return (
     <>
-      <TopBar back title={trip.name} />
+      <TopBar
+        back
+        title={trip.name}
+        action={
+          dates.length > 0 && outfitThumbs.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setEditing((v) => !v)}
+              aria-label={editing ? "완료" : "편집"}
+              className={iconAction}
+            >
+              {editing ? <Check size={20} /> : <Pencil size={19} />}
+            </button>
+          ) : undefined
+        }
+      />
       <div className={css({ paddingX: "5", paddingBottom: "10" })}>
         <h1 className={css({ textStyle: "displayMd", color: "text.primary", marginTop: "4" })}>
           {trip.name}
@@ -91,7 +109,13 @@ export function TripDetailScreen({ id }: { id: string }) {
             코디를 먼저 만들면 여기서 일차별로 배치할 수 있어요.
           </p>
         ) : (
-          <TripDayPlanner tripId={trip.id} dates={dates} initial={initial} outfits={outfitThumbs} />
+          <TripDayPlanner
+            tripId={trip.id}
+            dates={dates}
+            initial={initial}
+            outfits={outfitThumbs}
+            readOnly={!editing}
+          />
         )}
 
         <div className={css({ marginTop: "8" })}>
