@@ -4,6 +4,7 @@ import Link from "next/link";
 import { primaryImageUrl } from "@/components/items/ItemCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cardSurface } from "@/components/ui/styles";
+import { categoryLabel } from "@/lib/constants/categories";
 import { useStats } from "@/lib/queries/hooks";
 import { css, cx } from "@/styled-system/css";
 
@@ -133,30 +134,86 @@ export function StatsView() {
   const catMax = Math.max(1, ...s.byCategory.map((c) => c.count));
   const colorMax = Math.max(1, ...s.byColor.map((c) => c.count));
   const monthMax = Math.max(1, ...s.monthlySpend.map((m) => m.total));
+  const monthLabel = s.month.replace("-", ".");
 
   return (
     <div className={css({ display: "flex", flexDirection: "column", gap: "4" })}>
-      {/* 요약 */}
-      <div className={css({ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "3" })}>
-        {[
-          { label: "아이템", value: s.itemCount },
-          { label: "코디", value: s.outfitCount },
-          { label: "착용기록", value: s.logCount },
-        ].map((x) => (
-          <div key={x.label} className={cx(card, css({ textAlign: "center", paddingY: "4" }))}>
-            <p className={css({ textStyle: "2xl", fontWeight: 800, color: "brown.dark" })}>{x.value}</p>
-            <p className={css({ fontSize: "xs", color: "text.tertiary", marginTop: "1" })}>{x.label}</p>
-          </div>
-        ))}
-      </div>
+      {/* 개수 (줄 표시) */}
+      <p className={css({ fontSize: "sm", color: "text.secondary" })}>
+        옷 <b className={css({ color: "text.primary" })}>{s.itemCount}</b> · 코디{" "}
+        <b className={css({ color: "text.primary" })}>{s.outfitCount}</b> · 기록{" "}
+        <b className={css({ color: "text.primary" })}>{s.logCount}</b>
+      </p>
 
-      {/* 총 지출 */}
-      {s.totalSpend > 0 && (
-        <section className={cx(card, css({ display: "flex", alignItems: "baseline", justifyContent: "space-between" }))}>
-          <span className={css({ fontSize: "sm", color: "text.secondary" })}>총 지출</span>
+      {/* 이번 달 지출 + 브랜드별 */}
+      <section className={card}>
+        <div className={css({ display: "flex", alignItems: "baseline", justifyContent: "space-between" })}>
+          <span className={css({ fontSize: "sm", color: "text.secondary" })}>{monthLabel} 지출</span>
           <span className={css({ textStyle: "xl", fontWeight: 800, color: "brown.dark" })}>
-            {s.totalSpend.toLocaleString("ko-KR")}원
+            {s.monthSpend.toLocaleString("ko-KR")}원
           </span>
+        </div>
+        {s.byBrand.length > 0 && (
+          <div
+            className={css({
+              marginTop: "4",
+              paddingTop: "4",
+              borderTopWidth: "1px",
+              borderTopStyle: "solid",
+              borderTopColor: "border",
+              display: "flex",
+              flexDirection: "column",
+              gap: "2",
+            })}
+          >
+            {s.byBrand.map((b) => (
+              <div key={b.brand} className={css({ display: "flex", justifyContent: "space-between", fontSize: "sm" })}>
+                <span className={css({ color: "text.secondary" })}>{b.brand}</span>
+                <span className={css({ fontWeight: 600, color: "text.primary" })}>
+                  {b.total.toLocaleString("ko-KR")}원
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 이번 달 많이 입은 옷 Top3 */}
+      {s.topWorn.length > 0 && (
+        <section className={card}>
+          <h2 className={sectionTitle}>{monthLabel} 많이 입은 옷</h2>
+          <div className={css({ display: "flex", gap: "3" })}>
+            {s.topWorn.map((w, i) => (
+              <div key={w.item.id} className={css({ flexShrink: 0, textAlign: "center" })}>
+                <Thumb url={primaryImageUrl(w.item)} href={`/closet/${w.item.id}`} />
+                <p className={css({ fontSize: "xs", fontWeight: 600, color: "text.primary", marginTop: "1.5" })}>
+                  {i + 1}위 · {w.count}회
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 카테고리 */}
+      <section className={card}>
+        <h2 className={sectionTitle}>Categories</h2>
+        <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
+          {s.byCategory.map((c) => (
+            <Bar key={c.label} label={categoryLabel(c.label)} count={c.count} max={catMax} />
+          ))}
+        </div>
+      </section>
+
+      {/* 색상 */}
+      {s.byColor.length > 0 && (
+        <section className={card}>
+          <h2 className={sectionTitle}>Colors</h2>
+          <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
+            {s.byColor.map((c) => (
+              <Bar key={c.label} label={c.label} count={c.count} max={colorMax} hex={c.hex} />
+            ))}
+          </div>
         </section>
       )}
 
@@ -178,66 +235,10 @@ export function StatsView() {
         </section>
       )}
 
-      {/* 카테고리 */}
-      <section className={card}>
-        <h2 className={sectionTitle}>카테고리 분포</h2>
-        <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
-          {s.byCategory.map((c) => (
-            <Bar key={c.label} label={c.label} count={c.count} max={catMax} />
-          ))}
-        </div>
-      </section>
-
-      {/* 색상 */}
-      {s.byColor.length > 0 && (
-        <section className={card}>
-          <h2 className={sectionTitle}>많이 가진 색상</h2>
-          <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
-            {s.byColor.map((c) => (
-              <Bar key={c.label} label={c.label} count={c.count} max={colorMax} hex={c.hex} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 브랜드 지출 */}
-      {s.byBrand.length > 0 && (
-        <section className={card}>
-          <h2 className={sectionTitle}>브랜드별 지출</h2>
-          <div className={css({ display: "flex", flexDirection: "column", gap: "3" })}>
-            {s.byBrand.map((b, i) => (
-              <div key={b.brand} className={css({ display: "flex", justifyContent: "space-between", fontSize: "sm" })}>
-                <span className={css({ color: "text.secondary" })}>
-                  {i + 1}. {b.brand}
-                </span>
-                <span className={css({ fontWeight: 600, color: "text.primary" })}>
-                  {b.total.toLocaleString("ko-KR")}원
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 자주 입은 옷 */}
-      {s.topWorn.length > 0 && (
-        <section className={card}>
-          <h2 className={sectionTitle}>자주 입은 옷</h2>
-          <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
-            {s.topWorn.map((w) => (
-              <div key={w.item.id} className={css({ flexShrink: 0, textAlign: "center" })}>
-                <Thumb url={primaryImageUrl(w.item)} href={`/closet/${w.item.id}`} />
-                <p className={css({ fontSize: "xs", color: "text.tertiary", marginTop: "1" })}>{w.count}회</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* 착용당 비용 (가성비) */}
       {s.costPerWear.length > 0 && (
         <section className={card}>
-          <h2 className={sectionTitle}>가성비 좋은 옷 (착용당 비용)</h2>
+          <h2 className={sectionTitle}>가성비 좋은 옷</h2>
           <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
             {s.costPerWear.map((w) => (
               <div key={w.item.id} className={css({ flexShrink: 0, width: "64px", textAlign: "center" })}>
@@ -247,59 +248,6 @@ export function StatsView() {
                 </p>
                 <p className={css({ fontSize: "xs", color: "text.tertiary" })}>/{w.wears}회</p>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 안 입은 옷 발굴 */}
-      {s.neverWorn.length > 0 && (
-        <section className={card}>
-          <h2 className={sectionTitle}>잠자는 옷 (한 번도 안 입음)</h2>
-          <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
-            {s.neverWorn.map((it) => (
-              <Thumb key={it.id} url={primaryImageUrl(it)} href={`/closet/${it.id}`} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 미착용 기간 */}
-      {s.staleItems.length > 0 && (
-        <section className={card}>
-          <h2 className={sectionTitle}>오래 안 입은 옷</h2>
-          <div className={css({ display: "flex", gap: "2", overflowX: "auto", scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } })}>
-            {s.staleItems.map((w) => (
-              <div key={w.item.id} className={css({ flexShrink: 0, width: "64px", textAlign: "center" })}>
-                <Thumb url={primaryImageUrl(w.item)} href={`/closet/${w.item.id}`} />
-                <p className={css({ fontSize: "xs", color: "text.tertiary", marginTop: "1" })}>{w.days}일 전</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 스타일 키워드 */}
-      {s.styleKeywords.length > 0 && (
-        <section className={card}>
-          <h2 className={sectionTitle}>내 스타일 키워드</h2>
-          <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
-            {s.styleKeywords.map((k) => (
-              <span
-                key={k}
-                className={css({
-                  height: "32px",
-                  paddingX: "3",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  borderRadius: "full",
-                  bg: "surface.muted",
-                  fontSize: "sm",
-                  color: "text.secondary",
-                })}
-              >
-                #{k}
-              </span>
             ))}
           </div>
         </section>

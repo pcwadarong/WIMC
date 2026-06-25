@@ -3,7 +3,6 @@ import { getItems } from "@/lib/data/items";
 import { getOutfits } from "@/lib/data/outfits";
 import { getAllLogs } from "@/lib/data/logs";
 import { getCategoryTree } from "@/lib/data/categories";
-import { getProfile } from "@/lib/data/profile";
 import type { Item } from "@/types";
 
 export interface CountRow {
@@ -28,35 +27,31 @@ export interface MonthSpend {
   month: string; // YYYY-MM
   total: number;
 }
-export interface StaleRow {
-  item: Item;
-  days: number;
-}
 
 export interface Stats {
+  month: string; // 이번 달 YYYY-MM
   itemCount: number;
   outfitCount: number;
   logCount: number;
-  totalSpend: number;
+  monthSpend: number; // 이번 달 지출 (구매일 있는 것만)
   byCategory: CountRow[];
   byColor: CountRow[];
-  byBrand: BrandRow[];
-  topWorn: WearRow[];
-  neverWorn: Item[];
+  byBrand: BrandRow[]; // 이번 달
+  topWorn: WearRow[]; // 이번 달 많이 입은 Top3
   costPerWear: CostPerWearRow[];
   monthlySpend: MonthSpend[];
-  staleItems: StaleRow[];
-  styleKeywords: string[];
 }
 
 export async function getStats(): Promise<Stats> {
-  const [items, outfits, logs, categories, profile] = await Promise.all([
+  const [items, outfits, logs, categories] = await Promise.all([
     getItems(),
     getOutfits(),
     getAllLogs(),
     getCategoryTree(),
-    getProfile(),
   ]);
+
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   // 카테고리 id → 대분류 이름
   const parentNameByCat: Record<string, string> = {};
@@ -90,11 +85,13 @@ export async function getStats(): Promise<Stats> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
-  // 브랜드별 금액
+  // 이번 달 지출 + 브랜드별 (구매일 없는 건 제외)
+  let monthSpend = 0;
   const brandTotals: Record<string, number> = {};
   for (const it of items) {
-    if (it.brand && it.purchase_price) {
-      brandTotals[it.brand] = (brandTotals[it.brand] ?? 0) + it.purchase_price;
+    if (it.purchase_date?.startsWith(ym) && it.purchase_price) {
+      monthSpend += it.purchase_price;
+      if (it.brand) brandTotals[it.brand] = (brandTotals[it.brand] ?? 0) + it.purchase_price;
     }
   }
   const byBrand = Object.entries(brandTotals)
@@ -102,35 +99,30 @@ export async function getStats(): Promise<Stats> {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
-  // 착용 빈도 (코디 기록 기반)
+  // 착용 빈도: 전체(가성비용) + 이번 달(Top3용)
   const itemsById: Record<string, Item> = {};
   for (const it of items) itemsById[it.id] = it;
   const outfitById = new Map(outfits.map((o) => [o.id, o]));
 
   const wear: Record<string, number> = {};
-  const lastWorn: Record<string, string> = {}; // itemId → 최근 착용 date
+  const wearMonth: Record<string, number> = {};
   for (const log of logs) {
     if (!log.outfit_id) continue;
     const o = outfitById.get(log.outfit_id);
     for (const iid of o?.item_ids ?? []) {
       if (!itemsById[iid]) continue;
       wear[iid] = (wear[iid] ?? 0) + 1;
-      if (!lastWorn[iid] || log.date > lastWorn[iid]) lastWorn[iid] = log.date;
+      if (log.date.startsWith(ym)) wearMonth[iid] = (wearMonth[iid] ?? 0) + 1;
     }
   }
 
-  const topWorn = Object.entries(wear)
+  const topWorn = Object.entries(wearMonth)
     .map(([id, count]) => ({ item: itemsById[id], count }))
     .filter((w) => w.item)
     .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    .slice(0, 3);
 
-  const neverWorn = items
-    .filter((it) => it.status === "owned" && !wear[it.id])
-    .slice(0, 6);
-
-  // 총 지출 + 착용당 비용(가성비: 착용한 옷 중 cpw 낮은 순)
-  const totalSpend = items.reduce((s, it) => s + (it.purchase_price ?? 0), 0);
+  // 착용당 비용 (가성비: 착용한 옷 중 cpw 낮은 순) — 전체 기준
   const costPerWear = items
     .filter((it) => it.purchase_price && wear[it.id] > 0)
     .map((it) => ({
@@ -154,33 +146,17 @@ export async function getStats(): Promise<Stats> {
     .sort((a, b) => a.month.localeCompare(b.month))
     .slice(-12);
 
-  // 미착용 기간 (착용 이력 있는 보유 옷 중 가장 오래 안 입은 순)
-  const now = new Date();
-  const staleItems = items
-    .filter((it) => it.status === "owned" && lastWorn[it.id])
-    .map((it) => {
-      const diff = Math.floor(
-        (now.getTime() - new Date(`${lastWorn[it.id]}T00:00:00`).getTime()) /
-          86400000,
-      );
-      return { item: it, days: Math.max(0, diff) };
-    })
-    .sort((a, b) => b.days - a.days)
-    .slice(0, 5);
-
   return {
+    month: ym,
     itemCount: items.length,
     outfitCount: outfits.length,
     logCount: logs.length,
-    totalSpend,
+    monthSpend,
     byCategory,
     byColor,
     byBrand,
     topWorn,
-    neverWorn,
     costPerWear,
     monthlySpend,
-    staleItems,
-    styleKeywords: profile?.style_keywords ?? [],
   };
 }

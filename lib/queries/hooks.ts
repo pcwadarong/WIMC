@@ -41,6 +41,14 @@ export function useItem(id: string) {
   });
 }
 
+export function useItemWears(id: string) {
+  return useQuery({
+    queryKey: qk.itemWears(id),
+    queryFn: () => fetchJson<{ total: number; month: number }>(`/api/items/${id}/wears`),
+    enabled: !!id,
+  });
+}
+
 export function useMonthItemSummary(ym: string) {
   return useQuery({
     queryKey: qk.monthItemSummary(ym),

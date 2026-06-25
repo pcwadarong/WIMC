@@ -56,6 +56,39 @@ export async function getRecentItems(limit = 3): Promise<Item[]> {
   return items.slice(0, limit);
 }
 
+/** 옷 착용 횟수 — 이 옷이 들어간 코디가 기록(daily_logs)된 횟수 (누적/이번달) */
+export async function getItemWears(
+  id: string,
+): Promise<{ total: number; month: number }> {
+  const supabase = await createClient();
+  const user = await getCurrentUser();
+  if (!user) return { total: 0, month: 0 };
+
+  // 이 옷을 포함한 코디들
+  const { data: outfits } = await supabase
+    .from("outfits")
+    .select("id, item_ids")
+    .eq("user_id", user.id);
+  const outfitIds = (outfits ?? [])
+    .filter((o) => ((o.item_ids as string[] | null) ?? []).includes(id))
+    .map((o) => o.id as string);
+  if (outfitIds.length === 0) return { total: 0, month: 0 };
+
+  const { data: logs } = await supabase
+    .from("daily_logs")
+    .select("date")
+    .eq("user_id", user.id)
+    .in("outfit_id", outfitIds);
+
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const rows = (logs as { date: string }[] | null) ?? [];
+  return {
+    total: rows.length,
+    month: rows.filter((r) => r.date?.startsWith(ym)).length,
+  };
+}
+
 /** 특정 월의 등록 수 / 지출 합계 (필요한 컬럼만, 해당 월만 조회 — 전체 스캔 회피) */
 export async function getMonthItemSummary(
   ym: string,

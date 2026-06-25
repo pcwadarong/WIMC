@@ -7,6 +7,7 @@ import type { ItemFilters } from "@/lib/data/items";
 export const qk = {
   items: (filters?: ItemFilters) => ["items", "list", filters ?? {}] as const,
   item: (id: string) => ["items", "detail", id] as const,
+  itemWears: (id: string) => ["items", "wears", id] as const,
   monthItemSummary: (ym: string) => ["items", "month-summary", ym] as const,
 
   outfits: () => ["outfits", "list"] as const,

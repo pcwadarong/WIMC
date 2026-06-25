@@ -83,9 +83,11 @@ function Card({
 export function ItemDetail({
   item,
   categoryLabel,
+  wears,
 }: {
   item: Item;
   categoryLabel: string | null;
+  wears?: { total: number; month: number };
 }) {
   const images = item.images ?? [];
   const ordered = [...images].sort(
@@ -184,6 +186,27 @@ export function ItemDetail({
           >
             {item.brand}
           </p>
+        )}
+        {wears && (
+          <span
+            className={css({
+              display: "inline-flex",
+              alignItems: "center",
+              marginTop: "3",
+              height: "28px",
+              paddingX: "3",
+              borderRadius: "full",
+              borderWidth: "1.5px",
+              borderStyle: "solid",
+              borderColor: "brown.dark",
+              bg: "accent.green",
+              fontSize: "xs",
+              fontWeight: 600,
+              color: "text.primary",
+            })}
+          >
+            착용 {wears.total}회{wears.month > 0 ? ` · 이번 달 ${wears.month}회` : ""}
+          </span>
         )}
       </div>
 

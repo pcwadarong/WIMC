@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Pencil } from "lucide-react";
-import { useItem, useCategories } from "@/lib/queries/hooks";
+import { useItem, useCategories, useItemWears } from "@/lib/queries/hooks";
 import { ItemDetail } from "@/components/items/ItemDetail";
 import { FavoriteToggle } from "@/components/items/FavoriteToggle";
 import { DeleteItemButton } from "@/components/items/DeleteItemButton";
@@ -28,6 +28,7 @@ function resolveCategoryLabel(
 export function ItemDetailScreen({ id }: { id: string }) {
   const { data: item, isLoading } = useItem(id);
   const { data: categories = [] } = useCategories();
+  const { data: wears } = useItemWears(id);
 
   if (isLoading) {
     return (
@@ -69,7 +70,7 @@ export function ItemDetailScreen({ id }: { id: string }) {
           </>
         }
       />
-      <ItemDetail item={item} categoryLabel={categoryLabel} />
+      <ItemDetail item={item} categoryLabel={categoryLabel} wears={wears} />
     </>
   );
 }

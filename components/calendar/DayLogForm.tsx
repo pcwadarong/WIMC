@@ -100,6 +100,7 @@ export function DayLogForm({
     setDirty(false);
     queryClient.invalidateQueries({ queryKey: ["logs"] });
     queryClient.invalidateQueries({ queryKey: ["stats"] });
+    queryClient.invalidateQueries({ queryKey: ["items"] });
     router.push("/calendar");
   };
 
@@ -116,6 +117,7 @@ export function DayLogForm({
     show("삭제했어요.", "success");
     queryClient.invalidateQueries({ queryKey: ["logs"] });
     queryClient.invalidateQueries({ queryKey: ["stats"] });
+    queryClient.invalidateQueries({ queryKey: ["items"] });
     router.push("/calendar");
   };
 
