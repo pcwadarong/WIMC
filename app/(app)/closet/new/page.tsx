@@ -5,7 +5,7 @@ import { css } from "@/styled-system/css";
 export default function NewItemPage() {
   return (
     <>
-      <TopBar title="아이템 등록" back />
+      <TopBar title="New Item" back />
       <div className={css({ paddingX: "5", paddingBottom: "10" })}>
         <ItemFormScreen />
       </div>

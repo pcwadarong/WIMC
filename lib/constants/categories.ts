@@ -4,6 +4,17 @@ export interface DefaultCategory {
   children: string[];
 }
 
+/** 표시용 영문 라벨 (데이터는 한글 유지, 화면에만 영문). 미정의는 원문. */
+const CATEGORY_EN: Record<string, string> = {
+  상의: "Tops",
+  하의: "Bottoms",
+  아우터: "Outerwear",
+  신발: "Shoes",
+  가방: "Bags",
+  악세서리: "Accessories",
+};
+export const categoryLabel = (name: string) => CATEGORY_EN[name] ?? name;
+
 export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   {
     name: "상의",

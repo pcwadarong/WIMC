@@ -9,7 +9,7 @@ export default async function EditOutfitPage({
   const { id } = await params;
   return (
     <>
-      <TopBar back title="코디 수정" />
+      <TopBar back title="Edit Outfit" />
       <OutfitBuilderScreen outfitId={id} />
     </>
   );

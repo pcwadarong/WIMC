@@ -40,7 +40,7 @@ const badge = css({
 export default function SettingsPage() {
   return (
     <>
-      <TopBar back title="설정" />
+      <TopBar back title="Settings" />
       <div className={css({ paddingX: "5", paddingTop: "5" })}>
         <div className={css({ display: "flex", flexDirection: "column", gap: "2.5" })}>
           <Link href="/account/update-password" className={row}>

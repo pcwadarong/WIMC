@@ -10,7 +10,7 @@ export default async function EditItemPage({
   const { id } = await params;
   return (
     <>
-      <TopBar title="아이템 수정" back />
+      <TopBar title="Edit Item" back />
       <div className={css({ paddingX: "5", paddingBottom: "10" })}>
         <ItemFormScreen itemId={id} />
       </div>

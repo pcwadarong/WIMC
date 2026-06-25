@@ -14,6 +14,7 @@ import { bulkDeleteItems, toggleFavorite } from "@/app/(app)/closet/actions";
 import { SEASON_LABELS, type Season } from "@/types";
 import { useItems, useCategories } from "@/lib/queries/hooks";
 import { buildCategoryMap } from "@/lib/utils/category";
+import { categoryLabel } from "@/lib/constants/categories";
 import { sortItems, ITEM_SORT_LABELS, type ItemSort } from "@/lib/utils/item";
 import { chipClass } from "@/components/ui/styles";
 import { css } from "@/styled-system/css";
@@ -335,7 +336,7 @@ export function ClosetView() {
             aria-pressed={cat === p}
             className={chipClass({ active: cat === p, size: "sm" })}
           >
-            {p}
+            {categoryLabel(p)}
           </button>
         ))}
       </div>

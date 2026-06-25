@@ -38,7 +38,7 @@ export function TripDetailScreen({ id }: { id: string }) {
   if (isLoading) {
     return (
       <>
-        <TopBar back title="여행" />
+        <TopBar back title="Trip" />
         <div className={css({ paddingX: "5", paddingTop: "4" })}>
           <Skeleton className={css({ height: "24px", width: "50%", marginBottom: "6" })} />
           <Skeleton className={css({ height: "200px" })} />

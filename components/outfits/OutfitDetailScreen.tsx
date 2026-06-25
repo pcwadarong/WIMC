@@ -19,7 +19,7 @@ export function OutfitDetailScreen({ id }: { id: string }) {
   if (isLoading) {
     return (
       <>
-        <TopBar back title="코디" />
+        <TopBar back title="Outfit" />
         <div className={css({ paddingX: "5", paddingTop: "4" })}>
           <Skeleton className={css({ height: "24px", width: "50%", marginBottom: "6" })} />
           <Skeleton className={css({ height: "160px" })} />

@@ -4,7 +4,7 @@ import { TopBar } from "@/components/layout/TopBar";
 export default function NewOutfitPage() {
   return (
     <>
-      <TopBar title="코디 만들기" back />
+      <TopBar title="New Outfit" back />
       <OutfitBuilderScreen />
     </>
   );

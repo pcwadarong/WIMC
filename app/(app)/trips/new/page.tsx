@@ -4,7 +4,7 @@ import { TopBar } from "@/components/layout/TopBar";
 export default function NewTripPage() {
   return (
     <>
-      <TopBar back title="여행 만들기" />
+      <TopBar back title="New Trip" />
       <TripForm />
     </>
   );

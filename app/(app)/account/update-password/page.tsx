@@ -5,7 +5,7 @@ import { css } from "@/styled-system/css";
 export default function UpdatePasswordPage() {
   return (
     <>
-      <TopBar title="비밀번호 변경" back />
+      <TopBar title="Change Password" back />
       <div className={css({ paddingX: "5", paddingTop: "6" })}>
         <UpdatePasswordForm />
       </div>

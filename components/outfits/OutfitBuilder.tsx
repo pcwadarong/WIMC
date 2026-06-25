@@ -13,6 +13,7 @@ import { createOutfit, updateOutfit } from "@/app/(app)/outfits/actions";
 import type { CategoryMap } from "@/lib/recommend";
 import type { Item } from "@/types";
 import { chipClass } from "@/components/ui/styles";
+import { categoryLabel } from "@/lib/constants/categories";
 import { useUnsavedGuard } from "@/hooks/useUnsavedGuard";
 import { css } from "@/styled-system/css";
 
@@ -123,7 +124,7 @@ export function OutfitBuilder({
             className={tab(cat === p)}
             onClick={() => setCat(p)}
           >
-            {p}
+            {categoryLabel(p)}
           </button>
         ))}
       </div>
